@@ -18,28 +18,28 @@ Particle::~Particle()
 
 }
 
-void Particle::Update(ParticleCallback updateCallback, int timestep)
+void Particle::Update(ParticleCallback updateCallback, float timestep)
 {
 	if (updateCallback != nullptr) updateCallback(this);
 
-	velocity += acceleration * ((double)timestep / 1000.0);
-	position += velocity * (((double)timestep / 1000.0));
+	velocity += acceleration * timestep;
+	position += velocity * timestep;
 
 	lifeRemaining -= timestep;
 }
 
-void Particle::Render(Graphics* graphics, SDL_Rect* camera)
+void Particle::Render(SDL_Rect* camera)
 {
 	destRect.x = (int)position.Get_X() - camera->x;
 	destRect.y = (int)position.Get_Y() - camera->y;
 
-	if (!graphics->WithinScreen(destRect)) return;
+	if (!Graphics::Instance()->WithinScreen(destRect)) return;
 
 	//std::cout << "Particle location: " << destRect.x << ", " << destRect.y << "\n";
 
 	SDL_SetTextureAlphaMod(particleTexture, currentColor.a);
 	SDL_SetTextureColorMod(particleTexture, currentColor.r, currentColor.g, currentColor.b);
-	SDL_RenderCopyEx(graphics->Get_Renderer(), particleTexture, NULL, &destRect, angle, NULL, renderFlip);
+	SDL_RenderCopyEx(Graphics::Instance()->Get_Renderer(), particleTexture, NULL, &destRect, angle, NULL, renderFlip);
 }
 
 void Particle::Set_Scale(const Vector2D& newScale)

@@ -2,6 +2,8 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#define LEFT_MOUSE_CLICKED (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1)) != 0
+
 #include <iostream>
 #include <string>
 #include <SDL2/SDL_timer.h>
@@ -11,14 +13,16 @@
 #include "ParticleEmitter.h"
 #include "Vector2D.h"
 #include "Collider.h"
+#include "EntityType.h"
 
 class GameObject
 {
 protected:
 
 	std::unique_ptr<Sprite> sprite;
-	std::vector<Collider*> colliders;	// Just references them so they can update automatically.
+	std::vector<std::shared_ptr<Collider>> colliders;	// Just references them so they can update automatically.
 
+	EntityType entityType = eNone;		// Helps with quick game object interraction logic.
 	SDL_RendererFlip renderFlipState = SDL_FLIP_NONE;
 
 	Vector2D position;
@@ -30,17 +34,20 @@ protected:
 	int frameWidth, frameHeight;
 	bool isActive = false;
 	bool initialized = false;
-
+	bool queueForDelete = false;		// Deletes obj. on next frame.
+	float queueDeletionTime = 2.0f;		// Once queued to delete, how long until deleted? (help for
+										// stuff that happens when object is visibly deleted)
+	float deletionTimeRemaining = 0.0f;	// Adds timestep to itself when obj. queue for delete; helps time when to delete.
 public:
-	GameObject(Graphics* graphics, const std::string& graphicPath, const int& start_x, const int& start_y,
+	GameObject(const std::string& graphicPath, const int& start_x, const int& start_y,
 		const int& frameWidth, const int& frameHeight);
-	GameObject(Graphics* graphics, const std::string& graphicPath, const int& start_x, const int& start_y,
+	GameObject(const std::string& graphicPath, const int& start_x, const int& start_y,
 		const int& frameWidth, const int& frameHeight, const Vector2D& scale);
 	~GameObject();
 
 	virtual void ObjInit();
-	virtual void ObjUpdate();
-	virtual void ObjRender(Graphics* graphics, SDL_Rect* camera);
+	virtual void ObjUpdate(float timestep);
+	virtual void ObjRender(SDL_Rect* camera);
 	virtual void ObjQuit();
 
 	/*
@@ -64,20 +71,27 @@ public:
 	*	Call this in Collider.cpp to register a collider with the game object,
 	*	making the collider's position update based on gameobject's velocity.
 	*/
-	void RegisterCollider(Collider* col);
+	void RegisterCollider(std::shared_ptr<Collider> col);
 
 	// Getters and setters.
-	double Get_xPos();
+	double Get_xPos() const;
 	void Set_xPos(double newXPos);
 
-	double Get_yPos();
+	double Get_yPos() const;
 	void Set_yPos(double newYPos);
 
-	double Get_xVel();
+	double Get_xVel() const;
 	void Set_xVel(double newVel);
 
-	double Get_yVel();
+	double Get_yVel() const;
 	void Set_yVel(double newVel);
+
+	const Vector2D& Get_Position() const;	// Gets position at top left of render rect!
+	Vector2D Get_PositionCenter() const;	// Gets position with sprite rect taken into account.
+	void Set_Position(const Vector2D& pos);
+
+	const Vector2D& Get_Velocity() const;
+	void Set_Velocity(const Vector2D& vel);
 
 	// Keeps velocity in the same direction, but changes the magnitude.
 	void Set_Speed(double newSpeed);
@@ -85,8 +99,12 @@ public:
 	// Sets sprite scale as well, be sure to call this when scaling!!
 	void Set_Scale(const Vector2D& scale);
 
+	void Set_RenderAngle(const double& rendAngle);
+
 	bool Get_Active();
 	void Set_Active(bool active);
+
+	EntityType Get_EntityType();
 
 	Sprite* Get_Sprite();
 };

@@ -16,8 +16,8 @@ struct Particle
 
 	/*  All data for a particle, most publicly modifiable so  
 		that custom particle modification callbacks are simple */
-	int lifetime;
-	int lifeRemaining;
+	float lifetime;
+	float lifeRemaining;
 	float angle;
 	bool isActive;
 
@@ -37,9 +37,8 @@ struct Particle
 	// Updates position and renders based on current particle data, but first invokes
 	// the callback given, which will modify the particle's data how it desires
 	// before actually updating and rendering appropriately!!
-	void Update(ParticleCallback updateCallback, int timestep);
-	void Render(Graphics* graphics, SDL_Rect* camera);
-	void Quit();	// Need this to destroy textures properly.
+	void Update(ParticleCallback updateCallback, float timestep);
+	void Render(SDL_Rect* camera);
 
 	// Helper func. also deals with changing dest. rect as necessary.
 	void Set_Scale(const Vector2D& newScale);

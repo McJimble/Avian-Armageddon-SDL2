@@ -2,10 +2,13 @@
 
 const char* Graphics::WINDOW_NAME = "Assignment 3";
 const char* Graphics::BASE_IMAGE_PATH = "./Sprites/";
-const int Graphics::SPRITE_SCALE = 2;
+const char* Graphics::BASE_FONT_PATH = "./Fonts/";
+const int Graphics::SPRITE_SCALE = 4;
 const int Graphics::TILE_SIZE = 16;
-const int Graphics::DEF_SCREEN_WIDTH = 1280;
-const int Graphics::DEF_SCREEN_HEIGHT = 720;
+const int Graphics::DEF_SCREEN_WIDTH = 1920;
+const int Graphics::DEF_SCREEN_HEIGHT = 1080;
+
+Graphics* Graphics::instance = nullptr;
 
 Graphics::Graphics()
 {
@@ -19,6 +22,8 @@ Graphics::Graphics()
                                DEF_SCREEN_WIDTH,
                                DEF_SCREEN_HEIGHT, 0));
     renderer = SDL_CreateRenderer(window, -1, 0);
+
+    instance = this;
 }
 
 Graphics::~Graphics()
@@ -27,10 +32,10 @@ Graphics::~Graphics()
     SDL_DestroyWindow(window);
 }
 
-SDL_Surface* Graphics::LoadImage(const std::string& filePath)
+SDL_Surface* Graphics::LoadImage(const std::string& filePath, bool defPath)
 {
     // Append graphic path to final path; we assume all sprites are in same folder.
-    std::string finalPath = BASE_IMAGE_PATH;
+    std::string finalPath = (defPath) ? BASE_IMAGE_PATH : "";
     finalPath.append(filePath);
 
     // Create a surface and store it in our 
@@ -73,6 +78,66 @@ SDL_Color Graphics::LerpColorRGB(const SDL_Color& c1, const SDL_Color& c2, float
     return newColor;
 }
 
+void Graphics::HSVtoRGB(double h, double s, double v, SDL_Color* c)
+{
+    double hh, p, q, t, ff;
+    long i;
+
+    if (s <= 0.0)
+    {
+        c->r = v;
+        c->g = v;
+        c->b = v;
+        return;
+    }
+
+    hh = h;
+    if (hh >= 360.0) hh = 0.0;
+    hh /= 60.0;
+    i = (long)hh;
+    ff = hh - i;
+    
+    v *= 255;
+    p = v * (1.0 - s);
+    q = v * (1.0 - (s * ff));
+    t = v * (1.0 - (s * (1.0 - ff)));
+
+    switch (i) {
+        case 0:
+            c->r = v;
+            c->g = t;
+            c->b = p;
+            break;
+        case 1:
+            c->r = q;
+            c->g = v;
+            c->b = p;
+            break;
+        case 2:
+            c->r = p;
+            c->g = v;
+            c->b = t;
+            break;
+
+        case 3:
+            c->r = p;
+            c->g = q;
+            c->b = v;
+            break;
+        case 4:
+            c->r = t;
+            c->g = p;
+            c->b = v;
+            break;
+        case 5:
+        default:
+            c->r = v;
+            c->g = p;
+            c->b = q;
+            break;
+    }
+}
+
 SDL_Renderer* Graphics::Get_Renderer()
 {
     return this->renderer;
@@ -86,4 +151,10 @@ int Graphics::Get_ScreenHeight()
 int Graphics::Get_ScreenWidth()
 {
     return this->screenWidth;
+}
+
+void Graphics::Set_FullScreen()
+{
+    SDL_SetWindowFullscreen(window, 0);
+    SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 }

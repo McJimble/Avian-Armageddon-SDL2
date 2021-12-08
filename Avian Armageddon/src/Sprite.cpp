@@ -1,9 +1,10 @@
 #include "Sprite.h"
 
-Sprite::Sprite(Graphics* graphics, const std::string& texturePath, const int& start_x, const int& start_y,
+Sprite::Sprite(const std::string& texturePath, const int& start_x, const int& start_y,
 	const int& frameWidth, const int& frameHeight, const Vector2D& scale)
 {
-	this->spriteTexture = SDL_CreateTextureFromSurface(graphics->Get_Renderer(), graphics->LoadImage(texturePath));
+	this->spriteTexture = SDL_CreateTextureFromSurface(Graphics::Instance()->Get_Renderer(),
+		Graphics::Instance()->LoadImage(texturePath));
 
 	this->destRect.x = start_x;
 	this->destRect.y = start_y;
@@ -21,6 +22,7 @@ Sprite::Sprite(Graphics* graphics, const std::string& texturePath, const int& st
 	this->unscaledHeight = frameHeight;
 	this->unscaledWidth = frameWidth;
 	this->worldScale = scale;
+
 }
 
 Sprite::~Sprite()
@@ -55,17 +57,18 @@ void Sprite::SpriteUpdate()
 	}
 }
 
-// TODO: add functionality for angle and pivot here when necessary
-void Sprite::SpriteRender(Graphics* graphics, int posX, int posY, SDL_RendererFlip renderFlip)
+void Sprite::SpriteRender(int posX, int posY, SDL_RendererFlip renderFlip, double angle, SDL_Point* pivot, const SDL_Color& colorMod)
 {
 	if (!isVisible) return;
 
 	destRect.x = posX;
 	destRect.y = posY;
 
-	if (!graphics->WithinScreen(destRect)) return;
+	if (!Graphics::Instance()->WithinScreen(destRect)) return;
 
-	SDL_RenderCopyEx(graphics->Get_Renderer(), spriteTexture, &animations[currentAnimation]->srcRects[frameIndex], &destRect, 0.0, NULL, renderFlip);
+	SDL_SetTextureColorMod(spriteTexture, colorMod.r, colorMod.g, colorMod.b);
+	SDL_SetTextureAlphaMod(spriteTexture, colorMod.a);
+	SDL_RenderCopyEx(Graphics::Instance()->Get_Renderer(), spriteTexture, &animations[currentAnimation]->srcRects[frameIndex], &destRect, angle, pivot, renderFlip);
 }
 
 void Sprite::AddAnimation(const std::string& animationName, int numFrames, int durationTicks, int x, int y)

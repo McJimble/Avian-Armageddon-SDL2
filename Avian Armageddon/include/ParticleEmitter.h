@@ -19,16 +19,13 @@ private:
 	// as a parameter. Will modify the particle during its lifetime
 	Particle::ParticleCallback particleUpdateCallback;
 
-	// Tracks time step so update's velocity/accel. work, as well as lifetime update.
-	int lastUpdateTicks;
-
 public:
 
-	ParticleEmitter(Graphics* graphics, const std::string& texturePath, int maxParticles);
+	ParticleEmitter(const std::string& texturePath, int maxParticles);
 	~ParticleEmitter();
 
-	void PE_Update();
-	void PE_Render(Graphics* graphics, SDL_Rect* camera);
+	void PE_Update(float timestep);
+	void PE_Render(SDL_Rect* camera);
 
 	/*
 	 *	 Emits one particle, giving it starting values from given particleData. 

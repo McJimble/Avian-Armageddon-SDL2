@@ -14,5 +14,5 @@ public:
 	*  Simple call to SDL_RenderCopy that uses the tiles src/dest rects
 	*  and the associated tilemap's texture.
 	*/
-	void RenderTile(Graphics* graphics, SDL_Rect* camera);
+	void RenderTile(SDL_Rect* camera);
 };

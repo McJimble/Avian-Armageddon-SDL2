@@ -1,16 +1,16 @@
 #include "Collectible.h"
 
-Collectible::Collectible(Graphics* graphics, const std::string& graphicPath, const int& start_x, const int& start_y,
+Collectible::Collectible(const std::string& graphicPath, const int& start_x, const int& start_y,
 	const int& frameWidth, const int& frameHeight, const Vector2D& scale, ColliderShape colShape)
-	: GameObject(graphics, graphicPath, start_x, start_y, frameWidth, frameHeight, scale)
+	: GameObject(graphicPath, start_x, start_y, frameWidth, frameHeight, scale)
 {
 	pickupHitbox = std::make_unique<Collider>
-		(Vector2D(sprite->Get_SpriteWidth(), sprite->Get_SpriteHeight()), this, false, true, colShape, ColliderType::Normal);
+		(Vector2D(sprite->Get_SpriteWidth(), sprite->Get_SpriteHeight()), this, false, true, colShape, ColliderType::Normal, CollisionLayer::Projectile);
 
-	collisionParticles = std::make_unique<ParticleEmitter>(graphics, "Particle_Default.png", 100);
+	collisionParticles = std::make_unique<ParticleEmitter>("Particle_Default.png", 100);
 	collisionParticles->PE_SetUpdateCallback(CollectibleParticleUpdate);
 	
-	collisionParticleData.acceleration = Vector2D(0.0, 100.0);
+	collisionParticleData.acceleration = Vector2D(0.0, 1000.0);
 
 	SDL_Color col = Graphics::CreateSDLColor(0, 0, 0, 255);
 	if (colShape == ColliderShape::Circle)
@@ -22,7 +22,7 @@ Collectible::Collectible(Graphics* graphics, const std::string& graphicPath, con
 	collisionParticleData.startLifetimeSec = 1.15f;
 
 	numCollisionParticles = 18;
-	pushBackSpeed = 10;
+	pushBackSpeed = 1000;
 }
 
 Collectible::~Collectible()
@@ -30,16 +30,16 @@ Collectible::~Collectible()
 
 }
 
-void Collectible::ObjUpdate()
+void Collectible::ObjUpdate(float timestep)
 {
-	GameObject::ObjUpdate();
-	collisionParticles->PE_Update();
+	GameObject::ObjUpdate(timestep);
+	collisionParticles->PE_Update(timestep);
 }
 
-void Collectible::ObjRender(Graphics* graphics, SDL_Rect* camera)
+void Collectible::ObjRender(SDL_Rect* camera)
 {
-	GameObject::ObjRender(graphics, camera);
-	collisionParticles->PE_Render(graphics, camera);
+	GameObject::ObjRender(camera);
+	collisionParticles->PE_Render(camera);
 
 	if (!isActive || !initialized) return;
 
@@ -51,8 +51,8 @@ void Collectible::ObjRender(Graphics* graphics, SDL_Rect* camera)
 		test.x = (pickupHitbox->Get_BoundsPos()[0] - test.w / 2.0) - (float)camera->x;
 		test.y = (pickupHitbox->Get_BoundsPos()[1] - test.h / 2.0) - (float)camera->y;
 
-		SDL_SetRenderDrawColor(graphics->Get_Renderer(), 255, 0, 255, 255);
-		SDL_RenderDrawRectF(graphics->Get_Renderer(), &test);
+		SDL_SetRenderDrawColor(Graphics::Instance()->Get_Renderer(), 255, 0, 255, 255);
+		SDL_RenderDrawRectF(Graphics::Instance()->Get_Renderer(), &test);
 	}
 }
 
@@ -67,8 +67,8 @@ void Collectible::OnCollisionStart(const CollisionData& data)
 	for (int i = 0; i < numCollisionParticles; i++)
 	{
 		// Randomize velocity (units/sec), and color darkness.
-		double randVelX = (rand() % 200) - 100;
-		double randVelY = (rand() % 200) - 100;
+		double randVelX = (rand() % 2000) - 1000;
+		double randVelY = (rand() % 2000) - 1000;
 		double randColDiff = (rand() % 200);
 
 		// Set color before emit.

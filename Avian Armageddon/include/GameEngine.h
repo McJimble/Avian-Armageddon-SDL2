@@ -7,9 +7,11 @@
 #include <vector>
 #include <time.h>
 
+#include "GameBackground.h"
 #include "Player.h"
 #include "Graphics.h"
 #include "Level.h"
+#include "Text.h"
 
 // Main game engine class. Contains functionality for SDL, rendering,
 // handling SDL events, and updating GameObjects.
@@ -18,18 +20,26 @@ class GameEngine
 private:
 
 	bool gameIsRunning = true;
-	int framesPerSecond = 60;				// Desired, max fps
+	int framesPerSecond = 144;				// Desired, max fps
 
 	Graphics* graphics;
-
-	// Temp objects for assignment 2. Might be moved elsewhere later or changed.
-	std::unique_ptr<Player> player = NULL;
-	std::unique_ptr<Level> tempLevel = NULL;
-
 	SDL_Rect camera;
 
+	std::unique_ptr<GameBackground> background;
+	float backgroundSpeed = 150.0f;
+
+	// Temp objects for assignmensts. Might be moved elsewhere later or changed.
+	std::unique_ptr<Player> player = NULL;
+	std::unique_ptr<Level> tempLevel = NULL;
+	std::unique_ptr<Text> testUIText;
+
+	// Hardcodes guns, constructed at runtime with proper name/stats/graphics.
+	// Did this for the sake of time, I know this is bad;
+	// Would do it differently if given time.
+	std::vector<std::unique_ptr<Gun>> availableGuns;
+
 	// ---- Funcs. that are temporary or are for debugging stuff ----
-	void SpawnTestStage(Level* testLevel);
+	void CreateAllGuns();
 
 public:
 	GameEngine();
@@ -38,17 +48,17 @@ public:
 	// Regular Funcs.
 	void Init();
 	void HandleEvents();
-	void UpdateMechanics();
+	void UpdateMechanics(float timestep);
 	void Render();
 	void Quit();
 
-	// TESTING PARTICLE SYSTEM.
-	static void TestParticleUpdate(Particle*);
+	// Is left mouse clicked during this frame?
+	bool LeftMouseClicked();
 
 	// Getters/Setters
 	bool Get_GameIsRunning();
 	int Get_FramesPerSecond();
-	int Get_FrameDuration();
+	float Get_FrameDuration();
 };
 
 #endif

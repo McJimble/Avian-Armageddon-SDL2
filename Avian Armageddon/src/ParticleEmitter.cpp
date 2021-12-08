@@ -1,11 +1,10 @@
 #include "ParticleEmitter.h"
 
-ParticleEmitter::ParticleEmitter(Graphics* graphics, const std::string& texturePath, int maxParticles)
+ParticleEmitter::ParticleEmitter(const std::string& texturePath, int maxParticles)
 {
 	this->currentIndex = 0;
-	this->lastUpdateTicks = SDL_GetTicks();
 
-	this->sharedParticleTexture = SDL_CreateTextureFromSurface(graphics->Get_Renderer(), graphics->LoadImage(texturePath));
+	this->sharedParticleTexture = SDL_CreateTextureFromSurface(Graphics::Instance()->Get_Renderer(), Graphics::Instance()->LoadImage(texturePath));
 	particles.reserve(maxParticles);
 	for (int i = 0; i < maxParticles; i++)
 		particles.push_back(Particle(sharedParticleTexture));
@@ -18,9 +17,8 @@ ParticleEmitter::~ParticleEmitter()
 
 // Be sure to always call update on update on existing particle emitters,
 // or update gaps will cause timestep jumps and destroy the effect for a frame.
-void ParticleEmitter::PE_Update()
+void ParticleEmitter::PE_Update(float timestep)
 {
-	int ticksThisFrame = SDL_GetTicks();
 	for (Particle& part : particles)
 	{
 		if (!part.isActive) continue;
@@ -33,13 +31,12 @@ void ParticleEmitter::PE_Update()
 		else
 		{
 			// Call particle update with timestep since last update converted to seconds.
-			part.Update(particleUpdateCallback, ticksThisFrame - lastUpdateTicks);
+			part.Update(particleUpdateCallback, timestep);
 		}
 	}
-	lastUpdateTicks = SDL_GetTicks();
 }
 
-void ParticleEmitter::PE_Render(Graphics* graphics, SDL_Rect* camera)
+void ParticleEmitter::PE_Render(SDL_Rect* camera)
 {
 	// Loop through each particle where most recently created particle (at currentIndex)
 	// is rendered last and will therefore appear on top of the others.
@@ -47,7 +44,7 @@ void ParticleEmitter::PE_Render(Graphics* graphics, SDL_Rect* camera)
 	{
 		int realIndex = (currentIndex + i) % (int)particles.size();
 		if (!particles[realIndex].isActive) continue;
-		particles[realIndex].Render(graphics, camera);
+		particles[realIndex].Render(camera);
 	}
 }
 
@@ -61,7 +58,8 @@ void ParticleEmitter::PE_Emit(const ParticleData& particleData)
 	// Set all data to initial values specified by particleData.
 	// See ParticleData constructor to see default values for these if not set.
 	particle.isActive		= true;
-	particle.lifetime		= particle.lifeRemaining = (int)(particleData.startLifetimeSec * 1000);
+	particle.lifetime		= particleData.startLifetimeSec;
+	particle.lifeRemaining  = particleData.startLifetimeSec;
 	particle.angle			= particleData.startAngle;
 	particle.position		= particleData.position;
 	particle.velocity		= particleData.velocity;

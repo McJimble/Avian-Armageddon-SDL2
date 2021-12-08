@@ -42,7 +42,7 @@ protected:
 
 public:
 
-	Sprite(Graphics* graphics, const std::string& texturePath, const int& start_x, const int& start_y,
+	Sprite(const std::string& texturePath, const int& start_x, const int& start_y,
 		const int& frameWidth, const int& frameHeight, const Vector2D& worldScale);
 	~Sprite();
 
@@ -57,8 +57,11 @@ public:
 	*  graphics = instance of graphics for current game instance
 	*  posX = x-position to render sprite at in game world
 	*  posY = y-position to render sprite at in game world
+	*  angle = angle to render the object at. Does not rotate any colliders, so
+	*  use with caution!
+	*  pivot = point the object will rotate about. If not set, pivot will be center of object.
 	*/
-	void SpriteRender(Graphics* graphics, int posX, int pos, SDL_RendererFlip renderFlip);
+	void SpriteRender(int posX, int pos, SDL_RendererFlip renderFlip, double angle = 0.0, SDL_Point* pivot = NULL, const SDL_Color& colorMod = SDL_COLOR_SOLID_WHITE);
 
 	/*
 	*  Add an animation to the list of valid animation a sprite can play.

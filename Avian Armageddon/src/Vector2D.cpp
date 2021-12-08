@@ -142,11 +142,12 @@ double Vector2D::Distance(const Vector2D& v1, const Vector2D& v2)
 // Long calculation because converting from counter clockwise
 // to clockwise rotation. Have to negate unsigned angle (found by using negative vectors and
 // adding pi or 180 deg. to it), then add 90 degrees ( pi / 2 ),
-// then mod with 360 degrees (2 radians). Finally convert from radians to degrees.
+// THEN mod with 360 degrees (2 radians). Finally convert from radians to degrees.
 double Vector2D::UnsignedAngle(const Vector2D& v1, const Vector2D& v2)
 {
 	double nonCW = -std::atan2(-Vector2D::CrossMagnitude(v1, v2), -Vector2D::Dot(v1, v2)) + M_PI;
-	return std::fmod(nonCW + (M_PI / 2), TAU) * RAD_TO_DEGREES;
+	double temp = std::fmod(nonCW, TAU) * RAD_TO_DEGREES;
+	return temp;
 }
 
 // Negating at the end because atan2 returns counterclockwise rotation,
@@ -180,9 +181,19 @@ const double Vector2D::SqrMagnitude() const
 	return (data[0] * data[0]) + (data[1] * data[1]);
 }
 
+const Vector2D Vector2D::PerpendicularCW() const
+{
+	return Vector2D(data[1], -data[0]);
+}
+
+const Vector2D Vector2D::PerpendicularCCW() const
+{
+	return Vector2D(-data[1], data[0]);
+}
+
 void Vector2D::Normalize()
 {
-	const double magnitude = this->Magnitude();
+	const double magnitude = (this->Magnitude() < 0.00001) ? std::numeric_limits<double>::infinity() : this->Magnitude();
 	data[0] /= magnitude;
 	data[1] /= magnitude;
 }
@@ -197,7 +208,7 @@ Vector2D Vector2D::Get_Normalized()
 // other vector, since 0,0 represents 0 degrees in our cases.
 const double Vector2D::Angle() const
 {
-	return Vector2D::UnsignedAngle(*this, Vector2D(0, 0));
+	return Vector2D::UnsignedAngle(*this, Vector2D(1, 0));
 }
 
 const Vector2D Vector2D::Get_Rotated(const double& angleDeg)

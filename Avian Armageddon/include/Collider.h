@@ -1,19 +1,21 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
+#define NUM_LAYER_COMBOS 28
+
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#include "Vector2D.h"
 #include "Graphics.h"
+#include "CollisionData.h"
 
 class GameObject;
-class Collider;
 
 // Some lines were getting way too long, sorry if this is bad practice
 using std::unique_ptr;
+using std::shared_ptr;
 using std::pair;
 using std::unordered_map;
 using std::vector;
@@ -32,26 +34,14 @@ enum ColliderType
 	Static = 2,
 };
 
-// All data that may be relevant to an object in a collision, including
-// a reference to the other object that collided.
-struct CollisionData
-{
-	Collider* other;		// Other collider object involved in collision. Can be used to retrieve info about other gameobject.
-	Vector2D normal;		// Normal vector of the collision, direction only. Good to use in custom responses
-	Vector2D penetration;	// Amount of overlap between two colliders, relative to current collider (so oppostie of other)
-
-	CollisionData() {};
-	CollisionData(Collider* other, const Vector2D& normal, const Vector2D& penetration)
-	{
-		this->other = other;
-		this->normal = normal;
-		this->penetration = penetration;
-
-		if (std::isnan(this->normal[0])) this->normal[0] = 0.0;
-		if (std::isnan(this->normal[1])) this->normal[1] = 0.0;
-		if (std::isnan(this->penetration[0])) this->penetration[0] = 0.0;
-		if (std::isnan(this->penetration[1])) this->penetration[1] = 0.0;
-	}
+enum CollisionLayer
+{						// Corresponding collision matrix num:
+	Default = 1,		// 1
+	Projectile = 2,		// 2
+	Entity = 4,			// 3
+	Wall = 8,			// 4
+	Playable = 16,		// 5
+	Water = 32,			// 6
 };
 
 /*
@@ -64,13 +54,16 @@ class Collider
 {
 private:
 
+	// Hardcoded based on number of layers expected.
+	const static bool collisionMatrix[NUM_LAYER_COMBOS];
+
 	// All colliders that have been created. Are iterated through
 	// to perform collision detection.
-	static vector<Collider*> existingColliders;
+	static vector<shared_ptr<Collider>> existingColliders;
 
-	// Do not check for other colliders when collisions are updated.
+	// Does not check for other colliders when collisions are updated.
 	// Instead, existingColliders checks agains them but not vice versa.
-	static vector<Collider*> staticColliders;
+	static vector<shared_ptr<Collider>> staticColliders;
 
 	static int nextID;
 	int id;
@@ -85,17 +78,25 @@ private:
 
 	ColliderShape colliderShape;
 	ColliderType colliderType;
+	CollisionLayer colliderLayer;
 	SDL_FRect bounds;
+	Vector2D offset;				// Offset from SPRITE center of collider.
 
 	GameObject* attachedObj;
 
 public:
 
-	Collider(const Vector2D& initialSize, GameObject* attachedObj = nullptr ,bool autoColRes = false,
-		bool isTrigger = false, ColliderShape shapeType = ColliderShape::Box, ColliderType colType = ColliderType::Normal);
+	Collider(Vector2D initialSize, GameObject* attachedObj = nullptr ,bool autoColRes = false,
+		bool isTrigger = false, ColliderShape shapeType = ColliderShape::Box, ColliderType colType = ColliderType::Normal, CollisionLayer layer = CollisionLayer::Default);
 	~Collider();
 
+	void Deregister();
 	void Update(const Vector2D& velocity);
+
+	// Collision Matrix index uses triangular numbers formula and number of "bit shifts" of the layer values.
+	static int LayersToCollisionMatrixIndex(CollisionLayer lay1, CollisionLayer lay2);
+	bool CanLayersCollide(const Collider& other) const;
+
 
 	// CHECKS ALL COLLIDERS FOR COLLISIONS WITH OTHERS, ONLY CALL THIS IN GAME ENGINE
 	static void CheckAllCollisions();	
@@ -117,20 +118,24 @@ public:
 	friend void CollisionCircleCircle(Collider& c1, Collider& c2, pair<CollisionData*, CollisionData*>& result);	// Circle on circle
 
 	// Returns true if other/colID is found in this collider's currentCollsions!!!
-	bool IsColliding(const Collider& other);
-	bool IsColliding(int colID);
+	bool IsColliding(const Collider& other) const;
+	bool IsColliding(int colID) const;
 
-	Vector2D Get_BoundsSize();
+	Vector2D Get_BoundsSize() const;
 	void Set_BoundsSize(const Vector2D& size, bool updatePos = false);
 
-	Vector2D Get_BoundsPos();
+	Vector2D Get_BoundsPos() const;
 	void Set_BoundsPos(const Vector2D& pos);
 
+	void Set_OffsetPos(const Vector2D& off);
+
+	CollisionLayer GetLayer() const;
 
 	void Set_AutoCollisionResolution(bool val);
-	ColliderType Get_ColliderType();
-	ColliderShape Get_ColliderShape();
-	GameObject* Get_GameObject();
+	ColliderType Get_ColliderType() const;
+	ColliderShape Get_ColliderShape() const;
+	CollisionLayer Get_CollisionLayer() const;
+	GameObject* Get_GameObject() const;
 };
 
 #endif

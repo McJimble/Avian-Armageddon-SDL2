@@ -1,49 +1,65 @@
 #include "Collider.h"
 #include "GameObject.h"
+													  // Does layer top collide with right? (1 if yes):
+													  //  1  2  3  4  5  6  7
+const bool Collider::collisionMatrix[NUM_LAYER_COMBOS] = {1,					// 1
+														  1, 0,				    // 2
+														  1, 1, 1,			    // 3
+														  1, 1, 1, 0,			// 4
+														  1, 0, 1, 1, 0,		// 5
+														  1, 0, 1, 0, 1, 0,	    // 6
+														  1, 0, 0, 0, 0, 0, 0 };// 7
+// I tried to replicate Unity's Collision Matrix, look that up to see what i'm going for^
 
-vector<Collider*> Collider::staticColliders;
-vector<Collider*> Collider::existingColliders;
+vector<shared_ptr<Collider>> Collider::staticColliders;
+vector<shared_ptr<Collider>> Collider::existingColliders;
 int Collider::nextID = 0;
 
-Collider::Collider(const Vector2D& initialSize, GameObject* attachedObj, bool autoColRes,
-	bool isTrigger, ColliderShape shapeType, ColliderType colType)
+Collider::Collider(Vector2D initialSize, GameObject* attachedObj, bool autoColRes,
+	bool isTrigger, ColliderShape shapeType, ColliderType colType, CollisionLayer layer)
 {
 	this->autoCollisionResolution	= autoColRes;
 	this->isTrigger					= isTrigger;
 	this->colliderShape				= shapeType;
 	this->colliderType				= colType;
 	this->attachedObj				= attachedObj;
+	this->colliderLayer = layer;
+
+	if (shapeType == ColliderShape::Circle)
+		initialSize[1] = initialSize[0];
 	Set_BoundsSize(initialSize, true);
 
 	id = ++nextID;
 	if (colliderType == ColliderType::Static)
 	{
 		autoCollisionResolution = false;
-		staticColliders.push_back(this);
+
+		std::shared_ptr<Collider> ptr(this);
+		staticColliders.push_back(std::shared_ptr<Collider>(ptr));
 	}
 	else if (colliderType == ColliderType::Normal)
 	{
 		// Register references to this with global colliders,
-		// as well as attached obj so it's updated.
-		existingColliders.push_back(this);
-		attachedObj->RegisterCollider(this);
+		// as well as attached obj so it's updated by game object.
+		std::shared_ptr<Collider> ptr(this);
+		attachedObj->RegisterCollider(ptr);
+		existingColliders.push_back(std::shared_ptr<Collider>(ptr));
 	}
 }
+
 Collider::~Collider()
 {
+	
+}
+
+void Collider::Deregister()
+{
 	// Remove this collider from globally tracked colliders.
-	if (colliderType == ColliderType::Static)
-	{
-		vector<Collider*>::iterator pos = std::find(staticColliders.begin(), staticColliders.end(), this);
-		if (pos != staticColliders.end())
-			staticColliders.erase(pos);
-	}
-	else if (colliderType == ColliderType::Normal)
-	{
-		vector<Collider*>::iterator pos = std::find(existingColliders.begin(), existingColliders.end(), this);
-		if (pos != existingColliders.end())
-			existingColliders.erase(pos);
-	}
+	vector<shared_ptr<Collider>>::iterator pos = std::find_if(existingColliders.begin(), existingColliders.end(), [&](std::shared_ptr<Collider> const& p)
+		{ return p.get() == this; });
+
+	if (pos != existingColliders.end())
+		existingColliders.erase(pos);
 }
 
 void Collider::Update(const Vector2D& velocity)
@@ -51,6 +67,46 @@ void Collider::Update(const Vector2D& velocity)
 	if (colliderType == ColliderType::Static) return;
 	bounds.x += velocity.Get_X();
 	bounds.y += velocity.Get_Y();
+}
+
+int Collider::LayersToCollisionMatrixIndex(CollisionLayer lay1, CollisionLayer lay2)
+{
+	// This is possibly a very bizarre formula I figured out. Bear with me
+	int max = std::max((int)lay1, (int)lay2);
+	int min = std::min((int)lay1, (int)lay2);
+
+	// First, we need to know the power of 2 represented by our max
+	// and min layers (remember all layers' enums evaluate to a power of two)
+	int maxPowerOfTwo = 0;
+	int nextShift = 1;
+	while (nextShift != max)
+	{
+		nextShift <<= 1;
+		maxPowerOfTwo++;
+	}
+
+	int minPowerOfTwo = (min == max) ? maxPowerOfTwo : 0;
+	nextShift = (minPowerOfTwo == 0) ? 1 : min;
+	while (nextShift != min)
+	{
+		nextShift <<= 1;
+		minPowerOfTwo++;
+	}
+
+	// Need the triangular number (n*(n+1) / 2) of our power of two,
+	// but subtract the power by 2, clamped with zero.
+	unsigned triangularIndex = (maxPowerOfTwo <= 2) ? 0 : (maxPowerOfTwo - 2);
+	unsigned triangularNumber = (triangularIndex * (triangularIndex + 1)) / 2;
+
+	// The index our collision matrix is (2 * max power) + triangular number + min power
+	// (then minus one to account for array indexing).
+	return (2 * maxPowerOfTwo) + (triangularNumber) + minPowerOfTwo - 1;
+}
+
+bool Collider::CanLayersCollide(const Collider& other) const
+{
+	// See LayersToCollisionMatrixIndex to see how we get the value.
+	return (collisionMatrix[LayersToCollisionMatrixIndex(colliderLayer, other.colliderLayer)]);
 }
 
 void Collider::CheckAllCollisions()
@@ -68,9 +124,10 @@ void Collider::CheckAllCollisions()
 	// If the id does exist in currentCollisions, but collsion detection
 	// returns false, send last recorded CollisionData and 
 	// pop entry out of currentCollisions, call GameObject->OnCollisionEnd();
+	//std::cout << "Existing Colliders: " << existingColliders.size() << "\n";
 	for (int i = 0; i < (int)existingColliders.size(); i++)
 	{
-		Collider* c1 = existingColliders[i];
+		shared_ptr<Collider> c1 = shared_ptr<Collider>(existingColliders[i]);
 		if (!c1->attachedObj->Get_Active()) continue;
 
 		// Check against normal colliders first
@@ -79,16 +136,14 @@ void Collider::CheckAllCollisions()
 		{
 			const int& id2 = existingColliders[j]->id;
 
-			// Can't check collider against itself.
-			if (id1 == id2) continue;
-
 			// See if colliders are already colliding
 			// TO MAKE THIS CLEAR: The CollisionData here are allocated on the heap so they
 			// can be passed up the chain of collision detection functions. Their lifetime is
 			// controlled by the currentCollisions map after this, UNLESS no collision is
 			// detected, in which case BOTH are null and don't need to be freed!
 			pair<CollisionData*, CollisionData*> colResults;
-			Collider* c2 = existingColliders[j];
+			shared_ptr<Collider> c2 = shared_ptr<Collider>(existingColliders[j]);
+			if (!c2->attachedObj->Get_Active() || id1 == id2) continue;
 			EvaluateCollision(*c1, *c2, colResults);
 
 			// Finding in unordered_map is O(1) search, shouldn't be bad to do using iterators.
@@ -163,8 +218,8 @@ void Collider::CheckAllCollisions()
 			}
 
 			pair<CollisionData*, CollisionData*> colResults;
-			Collider* c1 = existingColliders[i];
-			Collider* c2 = staticColliders[j];
+			shared_ptr<Collider> c1 = shared_ptr<Collider>(existingColliders[i]);
+			shared_ptr<Collider> c2 = shared_ptr<Collider>(staticColliders[j]);
 			EvaluateCollision(*c1, *c2, colResults);
 
 			unordered_map<int, unique_ptr<CollisionData>>::const_iterator c1Prev = c1->currentCollisions.find(id2);
@@ -179,8 +234,6 @@ void Collider::CheckAllCollisions()
 			{
 				if (!newCollisionExists) continue;
 				
-				std::cout << "detected collision\n";
-
 				// Resolve new positions of objects; only resolve c1, which is confirmed non-static.
 				if (!c1->isTrigger && !c2->isTrigger)
 					ResolveCollision(*c1, *colResults.first);
@@ -190,7 +243,7 @@ void Collider::CheckAllCollisions()
 				if (c2->Get_GameObject())
 					c2->Get_GameObject()->OnCollisionStart(*colResults.second);
 
-				// Add collision pairs and data to map of collisions
+				// Add collision pairs and datadata to map of collisions
 				c1->currentCollisions[id2] = std::move(std::make_unique<CollisionData>(*colResults.first));
 				c2->currentCollisions[id1] = std::move(std::make_unique<CollisionData>(*colResults.second));
 			}
@@ -244,12 +297,15 @@ void ResolveCollision(Collider& c1, const CollisionData& collision)
 	moveY = ( std::fabs(collision.normal.Get_Y()) >= 0.001 );
 	c1.attachedObj->Set_xPos( c1.attachedObj->Get_xPos() - (moveX * moveAmt.Get_X()) );
 	c1.attachedObj->Set_yPos( c1.attachedObj->Get_yPos() - (moveY * moveAmt.Get_Y()) );
-	c1.bounds.x = c1.attachedObj->Get_xPos() + (c1.bounds.w / 2.0);
-	c1.bounds.y = c1.attachedObj->Get_yPos() + (c1.bounds.h / 2.0);
+	c1.bounds.x = c1.attachedObj->Get_xPos() + (c1.bounds.w / 2.0) + c1.offset[0];
+	c1.bounds.y = c1.attachedObj->Get_yPos() + (c1.bounds.h / 2.0) + c1.offset[1];
 }
 
 void EvaluateCollision(Collider& c1, Collider& c2, pair<CollisionData*, CollisionData*>& result)
 {
+	// If these aren't on any matching layers, collision can't happen.
+	if (!c1.CanLayersCollide(c2)) return;
+
 	// ColliderTypes have integers associated in powers of 2 (1, 2, 4, 8, etc.)
 	// By bitwise OR-ing, we know the combination based off one value, instead of
 	// doing a ton of IFs to check which collilder is which type.
@@ -378,19 +434,19 @@ void CollisionBoxCircle(Collider& box, Collider& circle, pair<CollisionData*, Co
 	result.second = new CollisionData(&box, -circleNormal, -penetration);
 }
 
-bool Collider::IsColliding(const Collider& other)
+bool Collider::IsColliding(const Collider& other) const
 {
 	return (currentCollisions.find(other.id) != currentCollisions.end());
 }
 
-bool Collider::IsColliding(int colID)
+bool Collider::IsColliding(int colID) const
 {
 	return (currentCollisions.find(colID) != currentCollisions.end());
 }
 
 // ---- Getters/Setters ----
 
-Vector2D Collider::Get_BoundsSize()
+Vector2D Collider::Get_BoundsSize() const
 {
 	return Vector2D(bounds.w, bounds.h);
 }
@@ -404,14 +460,22 @@ void Collider::Set_BoundsSize(const Vector2D& size, bool updatePos)
 	// If circle, override given size and use width as height as well.
 	if (colliderShape == ColliderShape::Circle) bounds.h = bounds.w;
 
-	if (updatePos && attachedObj)
+	if (updatePos)
 	{
-		bounds.x = (float)attachedObj->Get_xPos() + ((float)bounds.w / 2.0f);
-		bounds.y = (float)attachedObj->Get_yPos() + ((float)bounds.h / 2.0f);
+		if (attachedObj)
+		{
+			bounds.x = (float)attachedObj->Get_xPos() + ((float)bounds.w / 2.0f) + offset[0];
+			bounds.y = (float)attachedObj->Get_yPos() + ((float)bounds.h / 2.0f) + offset[1];
+		}
+		else
+		{
+			bounds.x = offset[0];
+			bounds.y = offset[1];
+		}
 	}
 }
 
-Vector2D Collider::Get_BoundsPos()
+Vector2D Collider::Get_BoundsPos() const
 {
 	return Vector2D(bounds.x, bounds.y);
 }
@@ -422,22 +486,38 @@ void Collider::Set_BoundsPos(const Vector2D& pos)
 	bounds.y = (float)pos[1];
 }
 
+void Collider::Set_OffsetPos(const Vector2D& off)
+{
+	offset = off;
+	Set_BoundsSize(Vector2D(bounds.w, bounds.h), true);
+}
+
+CollisionLayer Collider::GetLayer() const
+{
+	return colliderLayer;
+}
+
 void Collider::Set_AutoCollisionResolution(bool val)
 {
 	autoCollisionResolution = val;
 }
 
-ColliderType Collider::Get_ColliderType()
+ColliderType Collider::Get_ColliderType() const
 {
 	return colliderType;
 }
 
-ColliderShape Collider::Get_ColliderShape()
+ColliderShape Collider::Get_ColliderShape() const
 {
 	return colliderShape;
 }
 
-GameObject* Collider::Get_GameObject()
+CollisionLayer Collider::Get_CollisionLayer() const
+{
+	return colliderLayer;
+}
+
+GameObject* Collider::Get_GameObject() const
 {
 	return attachedObj;
 }

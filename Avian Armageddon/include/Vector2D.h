@@ -94,6 +94,11 @@ public:
 	const double Magnitude() const;
 	const double SqrMagnitude() const;
 
+	// Gets clockwise are counter-clockwise perpendicular vector.
+	// Not accounted for magnitude.
+	const Vector2D PerpendicularCW() const;	
+	const Vector2D PerpendicularCCW() const;
+
 	void Normalize();
 	Vector2D Get_Normalized();
 
