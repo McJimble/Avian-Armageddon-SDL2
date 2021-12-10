@@ -26,6 +26,11 @@ protected:
 	Vector2D worldScale;		
 	std::string currentAnimation;
 
+	SDL_Color* tempColorMod = nullptr;	// A color mod that will happen for one frame.
+										// set it each frame you're rendering the sprite.
+										// Useful for control color modding that has no reference to
+										// the game object (just the sprite) and wants to override normal color mod.
+
 	// Each animation has a name and associated set
 	// of source rects that are switched to in order.
 	std::map<std::string, std::unique_ptr<AnimationData>> animations;
@@ -86,6 +91,10 @@ public:
 
 	void Set_IsVisible(bool val);
 	void Set_WorldScale(const Vector2D& val);
+
+	void Set_TempColorMod(SDL_Color col);
+
+	SDL_Texture* Get_SpriteTexture();
 
 	int Get_UnscaledWidth();
 	int Get_UnscaledHeight();

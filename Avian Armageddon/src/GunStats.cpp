@@ -7,6 +7,7 @@ void GunStats::CreateGunStats()
 	// Pistol
 	GunStats* pistol = new GunStats();
 	pistol->automaticFire		= true;
+	pistol->infiniteAmmo		= true;
 	pistol->shotAngleOffset		= 0;
 	pistol->baseShotSpeed		= 600;
 	pistol->baseDamage			= 5;

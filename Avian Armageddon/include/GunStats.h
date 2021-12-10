@@ -27,6 +27,7 @@ struct GunStats
 	static void CreateGunStats();
 
 	bool automaticFire;				// Determines if holding left click will continue firing automatically.
+	bool infiniteAmmo;				// Never runs out of ammo (pistol only)
 	float shotAngleOffset;			// Unmodified offset of the direction bullets are fired, as an angle
 	float baseShotSpeed;			// Unmodified SPEED of bullet projectiles that are fired.	
 	int baseDamage;					// Unmodified amount of DAMAGE this gun will do per shot (pass to bullet after mods)

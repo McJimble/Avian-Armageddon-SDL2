@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <random>
 
+#include "WorldGrid.h"
 #include "Tilemap.h"
 #include "Collectible.h"	
 #include "tinyxml2.h"
@@ -19,24 +21,29 @@ struct Tileset
 *  an instance of one.
 * 
 *  Builds tilemaps from .xml file export of a "Tiled" level editor map.
+*  Since it knows about tile and grid size, also holds grid data for pathfinding.
 */
 class Level
 {
 private:
+
+	std::mt19937 randGenerator;
 
 	std::vector<std::unique_ptr<Tileset>> tilesets;
 
 	// Tilemaps will be rendered starting from lowest to highest layer number
 	std::map<int, std::unique_ptr<Tilemap>> tilemaps;
 
-	// Rect. collisions found on boundary of map or around
-	// water. These a static collision walls.
-	std::vector<Collider*> environmentCollisions;
+	std::vector<Collider*> environmentCollisions;	// Static colliders for walls + water.
+	std::vector<Vector2D> enemySpawnPoints;			// Spawn points for enemies.
+
+	std::unique_ptr<WorldGrid> worldGrid;
 
 	int levelWidth, levelHeight;
 
 public:
 
+	static const int GRID_NODE_SIZE;
 	static const char* BASE_MAP_LOCATION;
 
 	Level();
@@ -61,10 +68,15 @@ public:
 	void UpdateLevelObjects(float timestep);
 
 	/*
-	 *	Adds a static rectangular collider to the world.
+	 *	Gets random spawn point, with each existing one having an equal chance
+	 *  of being used.
 	 */
-	void AddStaticRect(const Vector2D& pos, const Vector2D& size, CollisionLayer layer);
+	const Vector2D& GetRandomSpawnPoint();
 
+	/*
+	 *	Get the closest spawn relative to the given point
+	 */
+	const Vector2D& GetSpawnPointInRange(const Vector2D& to, float radius);
 	/*
 	*  For purposes of assignment 3, spawns collectibles randomly, but only inside
 	*  the bounds of a given tilemap (won't spawn on any tiles and will clamp to
@@ -73,4 +85,6 @@ public:
 	//void SpawnRandomCollectibles(int amount, int tilemapLayer);
 
 	Tilemap* GetTilemap(int layer);
+
+	WorldGrid* GetGrid();
 };

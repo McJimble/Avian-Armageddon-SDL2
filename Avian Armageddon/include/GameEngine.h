@@ -11,7 +11,7 @@
 #include "Player.h"
 #include "Graphics.h"
 #include "Level.h"
-#include "Text.h"
+#include "WaveManager.h"
 
 // Main game engine class. Contains functionality for SDL, rendering,
 // handling SDL events, and updating GameObjects.
@@ -24,6 +24,9 @@ private:
 
 	Graphics* graphics;
 	SDL_Rect camera;
+
+	std::unique_ptr<WaveManager> waveManager;
+	std::unique_ptr<GameHud> gameHud;
 
 	std::unique_ptr<GameBackground> background;
 	float backgroundSpeed = 150.0f;
@@ -51,9 +54,6 @@ public:
 	void UpdateMechanics(float timestep);
 	void Render();
 	void Quit();
-
-	// Is left mouse clicked during this frame?
-	bool LeftMouseClicked();
 
 	// Getters/Setters
 	bool Get_GameIsRunning();

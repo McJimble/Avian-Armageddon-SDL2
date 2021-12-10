@@ -193,15 +193,16 @@ const Vector2D Vector2D::PerpendicularCCW() const
 
 void Vector2D::Normalize()
 {
-	const double magnitude = (this->Magnitude() < 0.00001) ? std::numeric_limits<double>::infinity() : this->Magnitude();
-	data[0] /= magnitude;
-	data[1] /= magnitude;
+	const double magnitude = this->Magnitude();
+	data[0] = (magnitude > 0.0000001) ? data[0] / magnitude : 0;
+	data[1] = (magnitude > 0.0000001) ? data[1] / magnitude : 0;
 }
 
 Vector2D Vector2D::Get_Normalized()
 {
-	const double magnitude = this->Magnitude();
-	return Vector2D(data[0], data[1]) / magnitude;
+	Vector2D n = Vector2D(data[0], data[1]);
+	n.Normalize();
+	return n;
 }
 
 // Gets unsigned angle by just using UnsignedAngle function but with 0,0 as the

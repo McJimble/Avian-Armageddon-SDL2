@@ -2,6 +2,7 @@
 #define GRAPHICS_H
 
 #define SDL_COLOR_SOLID_WHITE Graphics::CreateSDLColor(255, 255, 255, 255)
+#define SDL_COLOR_SOLID_BLACK Graphics::CreateSDLColor(0, 0, 0, 255)
 
 #include <map>
 #include <vector>
@@ -72,6 +73,11 @@ public:
 	bool WithinScreen(const SDL_Rect& objRect);
 
 	/*
+	 *	Same as above, with FRect instead.
+	 */
+	bool WithinScreen(const SDL_FRect& objRect);
+
+	/*
 	*	Helper method that creates an SDL_Color instance for us.
 	*   SDL_Color doesn't have a goo dconstructor and you normally 
 	*	have to set each individually rgba value. Takes up to 4 lines
@@ -90,6 +96,12 @@ public:
 	 *  the given hsv values.
 	 */
 	static void HSVtoRGB(double h, double s, double v, SDL_Color* c);
+
+	/*
+	 *	Generates HSV values based on the given SDL_Color.
+	 *  Returns the HSV values by reference.
+	 */
+	static void RGBtoHSV(double& h, double& s, double& v, const SDL_Color* c);
 
 	SDL_Renderer* Get_Renderer();
 

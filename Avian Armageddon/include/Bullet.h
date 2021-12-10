@@ -32,5 +32,7 @@ public:
 	 */
 	bool RemoveBullet();
 
+	int Get_FinalDamage() const;
+
 	static const std::vector<Bullet*>& Get_ExistingBullets();
 };

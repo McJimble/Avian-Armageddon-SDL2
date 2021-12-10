@@ -72,6 +72,7 @@ void Collectible::OnCollisionStart(const CollisionData& data)
 		double randColDiff = (rand() % 200);
 
 		// Set color before emit.
+		/*
 		SDL_Color temp = collisionParticleData.startColorMod;
 		if (ColliderShape::Box)
 			temp.r -= randColDiff;
@@ -89,6 +90,7 @@ void Collectible::OnCollisionStart(const CollisionData& data)
 		else
 			temp.g += randColDiff;
 		collisionParticleData.startColorMod = temp;
+		*/
 	}
 
 	if (data.other->Get_GameObject())

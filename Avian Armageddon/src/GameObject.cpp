@@ -11,6 +11,8 @@ GameObject::GameObject(const std::string& graphicPath, const int& start_x, const
 	angleDeg = 0.0;
 
 	sprite = std::make_unique<Sprite>(graphicPath, start_x, start_y, frameWidth, frameHeight, scale);
+
+	randGenerator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 GameObject::GameObject(const std::string& graphicPath, const int& start_x, const int& start_y,
@@ -23,6 +25,8 @@ GameObject::GameObject(const std::string& graphicPath, const int& start_x, const
 	position	= Vector2D(start_x, start_y);
 
 	sprite = std::make_unique<Sprite>(graphicPath, start_x, start_y, frameWidth, frameHeight, scale);
+	
+	randGenerator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 GameObject::~GameObject()

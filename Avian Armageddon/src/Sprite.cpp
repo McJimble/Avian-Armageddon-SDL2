@@ -61,13 +61,21 @@ void Sprite::SpriteRender(int posX, int posY, SDL_RendererFlip renderFlip, doubl
 {
 	if (!isVisible) return;
 
+	SDL_Color usedColor = (tempColorMod) ? (*tempColorMod) : colorMod;
+
+	if (tempColorMod)
+	{
+		delete tempColorMod;
+		tempColorMod = nullptr;
+	}
+
 	destRect.x = posX;
 	destRect.y = posY;
 
 	if (!Graphics::Instance()->WithinScreen(destRect)) return;
 
-	SDL_SetTextureColorMod(spriteTexture, colorMod.r, colorMod.g, colorMod.b);
-	SDL_SetTextureAlphaMod(spriteTexture, colorMod.a);
+	SDL_SetTextureColorMod(spriteTexture, usedColor.r, usedColor.g, usedColor.b);
+	SDL_SetTextureAlphaMod(spriteTexture, usedColor.a);
 	SDL_RenderCopyEx(Graphics::Instance()->Get_Renderer(), spriteTexture, &animations[currentAnimation]->srcRects[frameIndex], &destRect, angle, pivot, renderFlip);
 }
 
@@ -106,6 +114,16 @@ void Sprite::Set_WorldScale(const Vector2D& val)
 	this->worldScale = val;
 	destRect.w = (int)((float)unscaledWidth * worldScale.Get_X() * Graphics::SPRITE_SCALE);
 	destRect.h = (int)((float)unscaledHeight * worldScale.Get_Y() * Graphics::SPRITE_SCALE);
+}
+
+void Sprite::Set_TempColorMod(SDL_Color col)
+{
+	tempColorMod = new SDL_Color(col);
+}
+
+SDL_Texture* Sprite::Get_SpriteTexture()
+{
+	return spriteTexture;
 }
 
 int Sprite::Get_UnscaledWidth() { return unscaledWidth; }

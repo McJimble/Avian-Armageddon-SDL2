@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <random>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL.h>
 
@@ -18,6 +20,8 @@
 class GameObject
 {
 protected:
+
+	std::mt19937 randGenerator;		// Each obj. has a random number generator based on time created;
 
 	std::unique_ptr<Sprite> sprite;
 	std::vector<std::shared_ptr<Collider>> colliders;	// Just references them so they can update automatically.
@@ -37,7 +41,9 @@ protected:
 	bool queueForDelete = false;		// Deletes obj. on next frame.
 	float queueDeletionTime = 2.0f;		// Once queued to delete, how long until deleted? (help for
 										// stuff that happens when object is visibly deleted)
+	
 	float deletionTimeRemaining = 0.0f;	// Adds timestep to itself when obj. queue for delete; helps time when to delete.
+
 public:
 	GameObject(const std::string& graphicPath, const int& start_x, const int& start_y,
 		const int& frameWidth, const int& frameHeight);

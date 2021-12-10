@@ -1,10 +1,11 @@
 #include "Level.h"
 
+const int Level::GRID_NODE_SIZE = 40;
 const char* Level::BASE_MAP_LOCATION = "./maps/";
 
 Level::Level()
 {
-
+	randGenerator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 Level::~Level()
@@ -146,53 +147,79 @@ void Level::LoadMap(const std::string& mapFileName)
 		layer = layer->NextSiblingElement("layer");
 	}
 
+	// Now create grid for pathfinding based on map size.
+	Vector2D worldOrigin = Vector2D(-levelWidth / 2, -levelHeight / 2) * totalTileScale;
+	worldGrid = std::make_unique<WorldGrid>(worldOrigin, levelWidth * 2, levelHeight * 2, GRID_NODE_SIZE);
+
 	// NOW get collision rects + obstacle points.
 	XMLElement* objGroup = mapNode->FirstChildElement("objectgroup");
 	while (objGroup != nullptr)
 	{
-		// Get Collision layer from property tag.
-		// I realized far too late that if there are any more or less properties on
-		// and object group, the whole thing breaks. Will fix if given time.
-		CollisionLayer wallLayer = CollisionLayer::Wall;
-		XMLElement* waterProp = objGroup->FirstChildElement("properties")->FirstChildElement("property");
-		if (waterProp)
+		// Use property tag to determine if the object is a spawn point
+		// or a collider rect. If it's a rect, see if it's wat
+		XMLElement* nextProp = objGroup->FirstChildElement("properties")->FirstChildElement("property");
+		if (nextProp)
 		{
 			std::string propName = "isWater";
-			if (propName.compare(waterProp->Attribute("name")) == 0 &&
-				waterProp->BoolAttribute("value") == true)
-			{
-				wallLayer = CollisionLayer::Water;
+			if (propName.compare(nextProp->Attribute("name")) == 0)
+			{	
+				CollisionLayer wallLayer = CollisionLayer::Wall;
+
+				if (nextProp->BoolAttribute("value") == true)
+					wallLayer = CollisionLayer::Water;
+
+				XMLElement* object = objGroup->FirstChildElement("object");
+				while (object != nullptr)
+				{
+					float w = object->FloatAttribute("width") * (Graphics::SPRITE_SCALE + 1);
+					float h = object->FloatAttribute("height") * (Graphics::SPRITE_SCALE + 1);
+					float x = object->FloatAttribute("x") - ((levelWidth / 2) * Graphics::TILE_SIZE);
+					float y = object->FloatAttribute("y") - ((levelHeight / 2) * Graphics::TILE_SIZE);
+					x *= (Graphics::SPRITE_SCALE + 1);
+					y *= (Graphics::SPRITE_SCALE + 1);
+
+					Vector2D pos = Vector2D(x, y);
+					Vector2D size = Vector2D(w, h);
+
+					// Grid's position relative to top left, but colliders are 
+					// relative to center of rect. must pass pos now before accounting for that.
+					worldGrid->SetRectUnwalkable(pos, size);
+					
+					pos[0] += w / 2.0f;
+					pos[1] += h / 2.0f;
+
+					Collider* col = new Collider(size, nullptr, false, false,
+						ColliderShape::Box, ColliderType::Static, wallLayer);
+					col->Set_BoundsPos(pos);
+					environmentCollisions.push_back(col);
+
+					object = object->NextSiblingElement("object");
+				}
 			}
-		}
+			else
+				propName = "isSpawnPoint";
+				if (propName.compare(nextProp->Attribute("name")) == 0 &&
+					nextProp->BoolAttribute("value") == true)
+				{
+					XMLElement* object = objGroup->FirstChildElement("object");
+					while (object != nullptr)
+					{
+						float x = object->FloatAttribute("x") - ((levelWidth / 2) * Graphics::TILE_SIZE);
+						float y = object->FloatAttribute("y") - ((levelHeight / 2) * Graphics::TILE_SIZE);
+						x *= (Graphics::SPRITE_SCALE + 1);
+						y *= (Graphics::SPRITE_SCALE + 1);
 
-		XMLElement* object = objGroup->FirstChildElement("object");
-		while (object != nullptr)
-		{
-			float w = object->FloatAttribute("width") * (Graphics::SPRITE_SCALE + 1);
-			float h = object->FloatAttribute("height") * (Graphics::SPRITE_SCALE + 1);
-			float x = object->FloatAttribute("x") - ((levelWidth / 2) * Graphics::TILE_SIZE);
-			float y = object->FloatAttribute("y") - ((levelHeight / 2) * Graphics::TILE_SIZE);
-			x *= (Graphics::SPRITE_SCALE + 1);
-			y *= (Graphics::SPRITE_SCALE + 1);
-			x += w / 2.0f;
-			y += h / 2.0f;
+						enemySpawnPoints.push_back(Vector2D(x, y));
 
-			Vector2D pos = Vector2D(x, y);
-			Vector2D size = Vector2D(w, h);
+						object = object->NextSiblingElement("object");
+					}
+						
+				}
 
-			Collider* col = new Collider(size, nullptr, false, false,
-				ColliderShape::Box, ColliderType::Static, wallLayer);
-			col->Set_BoundsPos(pos);
-			environmentCollisions.push_back(col);
-
-			object = object->NextSiblingElement("object");
 		}
 
 		objGroup = objGroup->NextSiblingElement("objectgroup");
 	}
-
-	levelWidth *= totalTileScale;
-	levelHeight *= totalTileScale;
 }
 
 void Level::RenderLevelObjects(SDL_Rect* camera)
@@ -203,6 +230,8 @@ void Level::RenderLevelObjects(SDL_Rect* camera)
 	{
 		(*it).second->RenderTilemap(camera);
 	}
+
+	//worldGrid->Render(camera);
 
 	for (auto& col : environmentCollisions)
 	{
@@ -224,9 +253,30 @@ void Level::UpdateLevelObjects(float timestep)
 
 }
 
-void Level::AddStaticRect(const Vector2D& pos, const Vector2D& size, CollisionLayer layer)
+const Vector2D& Level::GetRandomSpawnPoint()
 {
+	if (enemySpawnPoints.empty()) return Vector2D(0, 0);
 
+	unsigned int randIndex = (unsigned int)randGenerator() % (int)enemySpawnPoints.size();
+	return enemySpawnPoints[randIndex];
+}
+
+const Vector2D& Level::GetSpawnPointInRange(const Vector2D& to, float radius)
+{
+	// Get collection of spawns that are within the given radius.
+	std::vector<Vector2D> tempInRange;
+	for (auto& spawn : enemySpawnPoints)
+	{
+		if ((spawn - to).SqrMagnitude() < radius * radius)
+			tempInRange.push_back(spawn);
+	}
+
+	// If no spawns are in range, get a random spawn position as a fallback.
+	if (tempInRange.empty()) return GetRandomSpawnPoint();
+
+	// Otherwise, get a random spawn from our list.
+	unsigned int randIndex = (unsigned int)randGenerator() % (int)tempInRange.size();
+	return Vector2D(tempInRange[randIndex]);
 }
 
 // Old function I used to spawn some collectibles around during testing.
@@ -280,4 +330,9 @@ void Level::SpawnRandomCollectibles(int amount, int tilemapLayer)
 Tilemap* Level::GetTilemap(int layer)
 {
 	return tilemaps[layer].get();
+}
+
+WorldGrid* Level::GetGrid()
+{
+	return worldGrid.get();
 }

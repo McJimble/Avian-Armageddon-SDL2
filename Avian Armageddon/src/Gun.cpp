@@ -95,6 +95,19 @@ void Gun::Shoot()
 	bul->ObjInit();
 	bul->Fire(Vector2D(1, 0).Get_Rotated(angleDeg) * stats->baseShotSpeed, stats->baseDamage);
 	//std::cout << "Spawning bullet at: " << bulletSpawnPos[0] << ", " << bulletSpawnPos[1] << "\n";
+
+	magAmmo--;
+	GameHud::Instance()->Set_AmmoCounterText(this);
+}
+
+int Gun::Get_ReserveAmmo() const
+{
+	return currentAmmo;
+}
+
+int Gun::Get_MagAmmo() const
+{
+	return magAmmo;
 }
 
 GunStats* Gun::Get_GunStats() const

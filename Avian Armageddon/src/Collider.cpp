@@ -23,7 +23,8 @@ Collider::Collider(Vector2D initialSize, GameObject* attachedObj, bool autoColRe
 	this->colliderShape				= shapeType;
 	this->colliderType				= colType;
 	this->attachedObj				= attachedObj;
-	this->colliderLayer = layer;
+	this->colliderLayer				= layer;
+	this->isActive					= true;
 
 	if (shapeType == ColliderShape::Circle)
 		initialSize[1] = initialSize[0];
@@ -128,7 +129,7 @@ void Collider::CheckAllCollisions()
 	for (int i = 0; i < (int)existingColliders.size(); i++)
 	{
 		shared_ptr<Collider> c1 = shared_ptr<Collider>(existingColliders[i]);
-		if (!c1->attachedObj->Get_Active()) continue;
+		if (!c1->attachedObj->Get_Active() || !c1->isActive) continue;
 
 		// Check against normal colliders first
 		const int& id1 = c1->id;
@@ -143,7 +144,7 @@ void Collider::CheckAllCollisions()
 			// detected, in which case BOTH are null and don't need to be freed!
 			pair<CollisionData*, CollisionData*> colResults;
 			shared_ptr<Collider> c2 = shared_ptr<Collider>(existingColliders[j]);
-			if (!c2->attachedObj->Get_Active() || id1 == id2) continue;
+			if (!c2->attachedObj->Get_Active() || !c2->isActive || id1 == id2) continue;
 			EvaluateCollision(*c1, *c2, colResults);
 
 			// Finding in unordered_map is O(1) search, shouldn't be bad to do using iterators.
@@ -210,12 +211,9 @@ void Collider::CheckAllCollisions()
 		{
 			const int& id2 = staticColliders[j]->id;
 
-			// Should never happen, but checking for sanity
-			if (id1 == id2)
-			{
-				std::cout << "Collider marked as static and normal, tf are you doing????\nID: " << id1 << std::endl;
+			// ID check should never happen, but checking for sanity
+			if (id1 == id2 || !staticColliders[j]->isActive)
 				continue;
-			}
 
 			pair<CollisionData*, CollisionData*> colResults;
 			shared_ptr<Collider> c1 = shared_ptr<Collider>(existingColliders[i]);
@@ -310,7 +308,7 @@ void EvaluateCollision(Collider& c1, Collider& c2, pair<CollisionData*, Collisio
 	// By bitwise OR-ing, we know the combination based off one value, instead of
 	// doing a ton of IFs to check which collilder is which type.
 	// EX. c1 = box = 1, c2 = circle = 2. Result = 0000 0011, meaning box and circle
-	int collisionCombination = c1.colliderShape | c2.colliderShape;
+	int collisionCombination = (int)c1.colliderShape | (int)c2.colliderShape;
 	switch (collisionCombination)
 	{
 		// Box on Box
@@ -495,6 +493,16 @@ void Collider::Set_OffsetPos(const Vector2D& off)
 CollisionLayer Collider::GetLayer() const
 {
 	return colliderLayer;
+}
+
+void Collider::Set_IsActive(bool active)
+{
+	this->isActive = active;
+}
+
+void Collider::Set_IsTrigger(bool isTrigger)
+{
+	this->isTrigger = isTrigger;
 }
 
 void Collider::Set_AutoCollisionResolution(bool val)

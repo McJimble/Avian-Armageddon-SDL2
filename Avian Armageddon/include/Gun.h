@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "GunStats.h"
 #include "Bullet.h"
+#include "GameHud.h"
 
 class Gun : public GameObject
 {
@@ -30,7 +31,10 @@ public:
 	//void ObjQuit() override;
 	void SpriteAnimationSetup() override;
 
-	void Shoot();;
+	void Shoot();
+
+	int Get_ReserveAmmo() const;
+	int Get_MagAmmo() const;
 
 	GunStats* Get_GunStats() const;
 };

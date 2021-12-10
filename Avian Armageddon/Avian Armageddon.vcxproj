@@ -157,12 +157,16 @@
     <ClInclude Include="include\Collectible.h" />
     <ClInclude Include="include\Collider.h" />
     <ClInclude Include="include\CollisionData.h" />
+    <ClInclude Include="include\Enemy.h" />
     <ClInclude Include="include\EntityType.h" />
     <ClInclude Include="include\GameBackground.h" />
     <ClInclude Include="include\GameEngine.h" />
+    <ClInclude Include="include\GameHud.h" />
     <ClInclude Include="include\GameObject.h" />
     <ClInclude Include="include\Graphics.h" />
+    <ClInclude Include="include\GridNode.h" />
     <ClInclude Include="include\Gun.h" />
+    <ClInclude Include="include\HealthComponent.h" />
     <ClInclude Include="include\Level.h" />
     <ClInclude Include="include\Particle.h" />
     <ClInclude Include="include\ParticleEmitter.h" />
@@ -174,6 +178,8 @@
     <ClInclude Include="include\tinyxml2.h" />
     <ClInclude Include="include\Vector2D.h" />
     <ClInclude Include="include\GunStats.h" />
+    <ClInclude Include="include\WaveManager.h" />
+    <ClInclude Include="include\WorldGrid.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprites\Particle_Default.png" />
@@ -187,12 +193,16 @@
     <ClCompile Include="src\Collectible.cpp" />
     <ClCompile Include="src\Collider.cpp" />
     <ClCompile Include="src\CollisionData.cpp" />
+    <ClCompile Include="src\Enemy.cpp" />
     <ClCompile Include="src\GameBackground.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
+    <ClCompile Include="src\GameHud.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\GridNode.cpp" />
     <ClCompile Include="src\Gun.cpp" />
     <ClCompile Include="src\GunStats.cpp" />
+    <ClCompile Include="src\HealthComponent.cpp" />
     <ClCompile Include="src\Level.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Particle.cpp" />
@@ -204,6 +214,8 @@
     <ClCompile Include="src\Tilemap.cpp" />
     <ClCompile Include="src\tinyxml2.cpp" />
     <ClCompile Include="src\Vector2D.cpp" />
+    <ClCompile Include="src\WaveManager.cpp" />
+    <ClCompile Include="src\WorldGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Fonts\LcdSolid.ttf" />

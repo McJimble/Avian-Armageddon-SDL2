@@ -59,6 +59,11 @@ bool Bullet::RemoveBullet()
 	return false;
 }
 
+int Bullet::Get_FinalDamage() const
+{
+	return finalDamage;
+}
+
 const std::vector<Bullet*>& Bullet::Get_ExistingBullets()
 {
 	return existingBullets;

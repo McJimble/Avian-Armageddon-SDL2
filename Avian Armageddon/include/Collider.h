@@ -21,20 +21,20 @@ using std::unordered_map;
 using std::vector;
 
 // Any other types should be given values of 2^n so the collision flag evals. work.
-enum ColliderShape
+enum struct ColliderShape
 {
 	Box = 1,
 	Circle = 2,
 };
 
 // Any other types should be given values of 2^n
-enum ColliderType
+enum struct ColliderType
 {
 	Normal = 1,
 	Static = 2,
 };
 
-enum CollisionLayer
+enum struct CollisionLayer
 {						// Corresponding collision matrix num:
 	Default = 1,		// 1
 	Projectile = 2,		// 2
@@ -75,6 +75,8 @@ private:
 
 	bool autoCollisionResolution;	// Automates reposition of gameobject(s) in collision.
 	bool isTrigger;					// If true, neither game object will resolve collision!
+	bool isActive;					// If true, will check collision. Useful is you want to
+									// temporarily disable the collider, but not a gameobject.
 
 	ColliderShape colliderShape;
 	ColliderType colliderType;
@@ -131,6 +133,8 @@ public:
 
 	CollisionLayer GetLayer() const;
 
+	void Set_IsActive(bool active);
+	void Set_IsTrigger(bool isTrigger);
 	void Set_AutoCollisionResolution(bool val);
 	ColliderType Get_ColliderType() const;
 	ColliderShape Get_ColliderShape() const;

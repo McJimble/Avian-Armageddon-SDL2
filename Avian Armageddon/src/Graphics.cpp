@@ -55,6 +55,16 @@ bool Graphics::WithinScreen(const SDL_Rect& objRect)
     return true;
 }
 
+bool Graphics::WithinScreen(const SDL_FRect& objRect)
+{
+    if (objRect.x < -objRect.w) return false;
+    if (objRect.y < -objRect.h) return false;
+    if (objRect.x > screenWidth + objRect.w) return false;
+    if (objRect.y > screenHeight + objRect.h) return false;
+
+    return true;
+}
+
 SDL_Color Graphics::CreateSDLColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     SDL_Color newColor = SDL_Color();
@@ -136,6 +146,46 @@ void Graphics::HSVtoRGB(double h, double s, double v, SDL_Color* c)
             c->b = q;
             break;
     }
+}
+
+void Graphics::RGBtoHSV(double& h, double& s, double& v, const SDL_Color* c)
+{
+    double min, max, delta;
+
+    min = c->r < c->g ? c->r : c->g;
+    min = min < c->b ? min : c->b;
+
+    max = c->r > c->g ? c->r : c->g;
+    max = max > c->b ? max : c->b;
+
+    v = max / 255.0;
+    delta = max - min;
+    if (delta < 0.00001)
+    {
+        s = 0;
+        h = 0; 
+        return;
+    }
+    if (max > 0.0) { 
+        s = (delta / max);                  
+    }
+    else {
+        s = 0.0;
+        h = 0.0;    
+        return;
+    }
+    if (c->r >= max)                           
+        h = (c->g - c->b) / delta;       
+    else
+        if (c->g >= max)
+            h = 2.0 + (c->b - c->r) / delta;  
+        else
+            h = 4.0 + (c->r - c->g) / delta;  
+
+    h *= 60.0;                              
+
+    if (h < 0.0)
+        h += 360.0;
 }
 
 SDL_Renderer* Graphics::Get_Renderer()
