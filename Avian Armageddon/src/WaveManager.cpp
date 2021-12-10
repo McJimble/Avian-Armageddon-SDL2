@@ -1,4 +1,5 @@
 #include "WaveManager.h"
+#include "Level.h"
 
 
 WaveManager* WaveManager::instance = nullptr;
@@ -42,10 +43,12 @@ WaveManager::WaveManager(Level* level, Player* player)
 		maxSetWave++;
 	}
 
-	Vector2D textScreenPos = Vector2D(Graphics::Instance()->Get_ScreenWidth() / 2, Graphics::Instance()->Get_ScreenHeight() / 2);
+	textScreenPos = Vector2D(Graphics::Instance()->Get_ScreenWidth() / 2, Graphics::Instance()->Get_ScreenHeight() / 2);
 	intermissionText = std::make_unique<TimedText>("Wave 1", textScreenPos, Vector2D(0, 0), defaultIntermissionTime);
 	intermissionText->spawnText->Set_FontSize(100);
 	intermissionText->spawnText->Set_CornerAsCenter();
+
+	randGenerator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 
 	Set_State(WaveState::Intermission);
 }
@@ -79,7 +82,15 @@ void WaveManager::Set_State(WaveState newState)
 
 		case WaveState::Inactive:
 		{
-			inactiveTime = defaultInactiveTime;
+			if (player->Get_Active())
+			{
+				inactiveTime = defaultInactiveTime;
+			}
+			else
+			{
+				inactiveTime = 10000000.0f;
+				ShowGameOver();
+			}
 		}
 	}
 }
@@ -112,7 +123,7 @@ void WaveManager::Update(float timestep)
 			if (enemiesKilled >= Get_TotalWaveEnemies())
 				Set_State(WaveState::Inactive);
 
-			if (spawnedEnemies.size() > Get_MaxEnemiesAlive())
+			if (enemiesAlive > Get_MaxEnemiesAlive())
 				break;
 
 			if (spawnEnemyWaitTime <= 0.0f)
@@ -167,7 +178,16 @@ void WaveManager::Render(SDL_Rect* camera)
 
 void WaveManager::SpawnEnemy(int health)
 {
-	Enemy* newEnemy = new Enemy(health, "EnemySheet.png", 20, 100, 29, 29, Vector2D(1.0, 1.0));
+	int randOrNearby = ((unsigned int)randGenerator() % 100);
+	Vector2D enemySpawn;
+
+	// 20% to spawn at any random spawn rather near the player.
+	if (randOrNearby < 20)
+		enemySpawn = level->GetRandomSpawnPoint();
+	else
+		enemySpawn = level->GetSpawnPointInRange(player->Get_Position(), 800);
+
+	Enemy* newEnemy = new Enemy(health, "EnemySheet.png", enemySpawn[0], enemySpawn[1], 29, 29, Vector2D(1.0, 1.0));
 	newEnemy->ObjInit();
 
 	enemiesAlive++;
@@ -183,9 +203,22 @@ void WaveManager::NextWave()
 	std::string displayWave = "Wave ";
 	displayWave.append(std::to_string(wave));
 	intermissionText->spawnText->UpdateText(displayWave.c_str());
+
 	intermissionText->timeRemaining = defaultIntermissionTime;
 
 	intermissionTime = defaultIntermissionTime;
+}
+
+void WaveManager::ShowGameOver()
+{
+	std::string gameOverText = "Game Over\n You survived ";
+	gameOverText.append(std::to_string(wave));
+	gameOverText.append(" rounds");
+	intermissionText->spawnText->UpdateText(gameOverText.c_str());
+	intermissionText->spawnText->Set_Position(textScreenPos);
+	intermissionText->spawnText->Set_CornerAsCenter();
+	intermissionText->currentColor.a = 255.0f;
+	intermissionText->timeRemaining = 100000.0f;
 }
 
 void WaveManager::EnemyKilled()

@@ -13,6 +13,8 @@ protected:
 	static const float START_INVULN_TIME;	// Time player is invincible after getting hit.
 	static const float INVULN_BLINK_RATE;	// Rate player blinks while invincible.
 	static const int START_HEALTH;
+	static const SDL_Color beginReloadCol;
+	static const SDL_Color endReloadCol;
 	static const SDL_Color deathColors[3];
 
 	Collider* playerCollider;
@@ -35,7 +37,7 @@ protected:
 
 	float invulAfterDamageTimeRemaining;
 
-	const int MAX_VEL = 280;
+	const int MAX_VEL = 250;
 	int playerAcceleration = 2000;
 
 	bool moving = false;

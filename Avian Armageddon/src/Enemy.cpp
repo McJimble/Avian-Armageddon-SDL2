@@ -4,8 +4,8 @@
 
 float Enemy::initSpawnParticlesRate = 0.125f;
 float Enemy::initChaseStateNewPath = 0.05f;
-float Enemy::moveSpeed = 180.0f;
-float Enemy::knockBackSpeed = 650.0f;
+float Enemy::moveSpeed = 250.0f;
+float Enemy::knockBackSpeed = 800.0f;
 int Enemy::damageToPlayer = 25;
 
 Enemy::Enemy(int startHealth, const std::string& graphicPath, const int& start_x, const int& start_y,
@@ -162,6 +162,7 @@ void Enemy::ObjRender(SDL_Rect* camera)
     particleEmitter->PE_Render(camera);
     health->Render(camera);
     
+    /*
     SDL_FRect test = SDL_FRect();
     test.w = mainCollider->Get_BoundsSize()[0];
     test.h = mainCollider->Get_BoundsSize()[1];
@@ -169,7 +170,7 @@ void Enemy::ObjRender(SDL_Rect* camera)
     test.y = (mainCollider->Get_BoundsPos()[1] - test.h / 2.0) - (float)camera->y;
     SDL_SetRenderDrawColor(Graphics::Instance()->Get_Renderer(), 255, 255, 0, 255);
     SDL_RenderDrawRectF(Graphics::Instance()->Get_Renderer(), &test);
-    
+    */
 }
 
 void Enemy::SpriteAnimationSetup()

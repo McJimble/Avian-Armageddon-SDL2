@@ -101,6 +101,7 @@ void Sprite::PlayAnimation(const std::string& animationName, bool playOnce)
 	{
 		currentAnimation = animationName;
 		frameIndex = 0;
+		ticksElapsed = 0;
 	}
 }
 

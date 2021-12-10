@@ -71,12 +71,12 @@ public:
 	 *	Gets random spawn point, with each existing one having an equal chance
 	 *  of being used.
 	 */
-	const Vector2D& GetRandomSpawnPoint();
+	Vector2D GetRandomSpawnPoint();
 
 	/*
 	 *	Get the closest spawn relative to the given point
 	 */
-	const Vector2D& GetSpawnPointInRange(const Vector2D& to, float radius);
+	Vector2D GetSpawnPointInRange(const Vector2D& to, float radius);
 	/*
 	*  For purposes of assignment 3, spawns collectibles randomly, but only inside
 	*  the bounds of a given tilemap (won't spawn on any tiles and will clamp to

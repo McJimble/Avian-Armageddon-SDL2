@@ -3,6 +3,8 @@
 Gun::Gun(GunStats* stats) : GameObject(stats->spritePath, 100000, 100000, 
 		stats->spriteWidth, stats->spriteHeight, Vector2D(1.0, 1.0))
 {
+	reloadTimeRemaining = FLT_MAX;
+
 	this->stats = stats;
 
 	currentAmmo = stats->maximumAmmo;
@@ -39,9 +41,18 @@ void Gun::ObjUpdate(float timestep)
 		position[1] += stats->renderPivotOffset[1] * Graphics::SPRITE_SCALE;
 	}
 
+	reloadTimeRemaining -= timestep;
+	if (reloadTimeRemaining < 0.0f)
+	{
+		currentAmmo -= stats->magazineSize - magAmmo;
+		magAmmo = stats->magazineSize;
+		reloadTimeRemaining = FLT_MAX;
+		GameHud::Instance()->Set_AmmoCounterText(this);
+	}
+
 	// Now, try to shoot if mouse is down, and fire cooldown is finished.
 	// Also track if left mouse was removed since last frame if gun automatic.
-	if (SDL_GetTicks() - ticksLastFired > stats->fireRateTicks)
+	else if (SDL_GetTicks() - ticksLastFired > stats->fireRateTicks && magAmmo > 0)
 	{
 		if (!LEFT_MOUSE_CLICKED)
 		{
@@ -98,6 +109,21 @@ void Gun::Shoot()
 
 	magAmmo--;
 	GameHud::Instance()->Set_AmmoCounterText(this);
+
+	if (magAmmo <= 0) Reload();
+}
+
+void Gun::Reload()
+{
+	if (magAmmo >= stats->magazineSize) return;
+	reloadTimeRemaining = stats->reloadTicks / 1000.0f;
+}
+
+float Gun::Get_ReloadCompletion() const
+{
+	float reloadTime = stats->reloadTicks / 1000.0f;
+	if (reloadTimeRemaining > reloadTime) return 1.01f;
+	return 1.0f - (reloadTimeRemaining / reloadTime);
 }
 
 int Gun::Get_ReserveAmmo() const

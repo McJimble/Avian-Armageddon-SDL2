@@ -2,7 +2,7 @@
 
 SDL_Color HealthComponent::DEFAULT_DAMAGE_COLOR = { 255, 0, 0, 255 };
 
-float HealthComponent::dmgColorDefaultTime = 0.2f;
+float HealthComponent::dmgColorDefaultTime = 0.13f;
 Vector2D HealthComponent::trackedPosOffset = Vector2D(50, 8);
 
 HealthComponent::HealthComponent(int initHealth, Sprite* modifySprite, Vector2D* trackPos)

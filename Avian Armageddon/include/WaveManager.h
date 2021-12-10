@@ -2,6 +2,7 @@
 
 #include <set>
 #include <fstream>
+#include <random>
 
 #include "Enemy.h"
 
@@ -19,6 +20,8 @@ private:
 	static WaveManager* instance;
 	static float defaultIntermissionTime;
 	static float defaultInactiveTime;
+
+	std::mt19937 randGenerator;
 
 	std::set<std::shared_ptr<Enemy>, EnemyComparator> spawnedEnemies;
 
@@ -39,6 +42,7 @@ private:
 	WaveState state;				// Current state of wave, mini-state machine.
 
 	std::unique_ptr<TimedText> intermissionText;
+	Vector2D textScreenPos;
 	float intermissionTime;			// Time (sec) remianing in of intermission state.
 	float spawnEnemyWaitTime;		// Time (sec) until a new enemy will spawn.
 	float inactiveTime;				// Time wave is inactive before next one starts.
@@ -63,6 +67,12 @@ public:
 	 *  as well as make temporary text appear on the screen.
 	 */
 	void NextWave();
+
+	/*
+	 *	Player dead, use intermission text object to display that the game
+	 *  is over, and display # of waves survived.
+	 */
+	void ShowGameOver();
 
 	/*
 	 *	Sets new state of WaveManager's FSM. Also does proper actions for

@@ -1,13 +1,21 @@
 #include "GameEngine.h"
 
+GameEngine* GameEngine::instance = nullptr;
+
 GameEngine::GameEngine()
 {
-
+    if (instance) return;
+    instance = this;
 }
 
 GameEngine::~GameEngine()
 {
 
+}
+
+GameEngine* GameEngine::Instance()
+{
+    return instance;
 }
 
 // ---- MAIN FUNCS. ----
@@ -54,7 +62,7 @@ void GameEngine::Init()
     CreateAllGuns();
 
     // Init player now that guns exist
-    player = std::make_unique<Player>("PlayerSheet.png", 0, 0, 29, 29, Vector2D(1.0, 1.0));
+    player = std::make_unique<Player>("PlayerSheet.png", 100, 0, 29, 29, Vector2D(1.0, 1.0));
     player->ObjInit();
     player->AddWeapon(availableGuns[0].get());
     player->SwapWeapon(availableGuns[0].get());

@@ -18,6 +18,8 @@
 class GameEngine
 {
 private:
+	
+	static GameEngine* instance;
 
 	bool gameIsRunning = true;
 	int framesPerSecond = 144;				// Desired, max fps
@@ -47,6 +49,8 @@ private:
 public:
 	GameEngine();
 	~GameEngine();
+
+	static GameEngine* Instance();
 
 	// Regular Funcs.
 	void Init();

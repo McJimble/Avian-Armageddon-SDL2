@@ -1,12 +1,16 @@
 #include "Player.h"
 #include "Enemy.h"
+#include "WaveManager.h"
 
 const float Player::START_INVULN_TIME = 2.0f;
 const float Player::INVULN_BLINK_RATE = 0.3f;
 const int Player::START_HEALTH = 100;
-const SDL_Color Player::deathColors[3] = { {240, 0, 0, 255},
-                                           {90, 0, 0, 255},
-                                           {200, 200, 200, 255} };
+const SDL_Color Player::beginReloadCol  = {240, 0, 0, 255 };
+const SDL_Color Player::endReloadCol    = { 0, 240, 0, 255 };
+
+const SDL_Color Player::deathColors[3]  = { {240, 0, 0, 255},
+                                            {90, 0, 0, 255},
+                                            {200, 200, 200, 255} };
 
 Player::Player(const std::string& graphicPath, const int& start_x, const int& start_y,
 	const int& frameWidth, const int& frameHeight, const Vector2D& scale) : GameObject(graphicPath, start_x, start_y, frameWidth, frameHeight, scale)
@@ -82,6 +86,7 @@ void Player::ObjRender(SDL_Rect* camera)
 {
     if (isActive)
         shadowSprite->SpriteRender((position[0] + shadowOffset[0]) - camera->x, (position[1] + shadowOffset[1]) - camera->y, SDL_FLIP_NONE);
+
     emitter->PE_Render(camera);
     health->Render(camera);
 
@@ -96,8 +101,29 @@ void Player::ObjRender(SDL_Rect* camera)
     if (!isActive) return;
 
     GameObject::ObjRender(camera);
-    if (currentWeapon) currentWeapon->ObjRender(camera);
-    
+    if (currentWeapon)
+    {
+        float reloadLerp = currentWeapon->Get_ReloadCompletion();
+        if (reloadLerp < 1.0f)
+        {
+            Vector2D reloadRectPos = position + Vector2D(sprite->Get_SpriteWidth() / 4.0, -15);
+            SDL_FRect reloadBarRect;
+            reloadBarRect.x = reloadRectPos[0] - camera->x;
+            reloadBarRect.y = reloadRectPos[1] - camera->y;
+            reloadBarRect.h = 10;   // Arbitrary; looks good, though.
+
+            reloadBarRect.w = sprite->Get_SpriteWidth() / 1.1;
+            reloadBarRect.w = (3) + (reloadBarRect.w - 3) * reloadLerp;
+
+            SDL_Color lerpColor = Graphics::LerpColorRGB(endReloadCol, beginReloadCol, reloadLerp);
+            lerpColor.a = 255;
+
+            SDL_SetRenderDrawColor(Graphics::Instance()->Get_Renderer(),
+                lerpColor.r, lerpColor.g, lerpColor.b, lerpColor.a);
+            SDL_RenderFillRectF(Graphics::Instance()->Get_Renderer(), &reloadBarRect);
+        }
+        currentWeapon->ObjRender(camera);
+    }
     /*
     SDL_FRect test = SDL_FRect();
     test.w = playerCollider->Get_BoundsSize()[0];
@@ -135,6 +161,7 @@ void Player::OnCollisionStart(const CollisionData& data)
             // Temp; set player inactive on death
             SpawnDeathParticles();
             Set_Active(false);
+            WaveManager::Instance()->Set_State(WaveState::Inactive);
         }
         else
             SpawnDamageParticles();
@@ -145,24 +172,7 @@ void Player::OnCollisionStart(const CollisionData& data)
 
 void Player::OnCollisionContinue(const CollisionData& data)
 {
-    if (data.Get_EntityType() == EntityType::eEnemy && invulAfterDamageTimeRemaining <= 0.0f)
-    {
-        Enemy* e = dynamic_cast<Enemy*>(data.other->Get_GameObject());
-        health->Damage(e->Get_Damage(), true);
-
-        GameHud::Instance()->ParsePlayerHealth(health.get());
-
-        if (!health->Get_IsAlive())
-        {
-            // Temp; set player inactive on death
-            SpawnDeathParticles();
-            Set_Active(false);
-        }
-        else
-            SpawnDamageParticles();
-
-        invulAfterDamageTimeRemaining = START_INVULN_TIME;
-    }
+    this->OnCollisionStart(data);
 }
 
 
@@ -263,6 +273,12 @@ void Player::PlayerControl(const Uint8* keys, float timestep)
         sprite->PlayAnimation("Move", false);
     else
         sprite->PlayAnimation("Idle", false);
+
+    if (keys[SDL_SCANCODE_R] && currentWeapon)
+    {
+        if (currentWeapon->Get_ReloadCompletion() > 1.0f)
+        currentWeapon->Reload();
+    }
 }
 
 // GameEngine class calls this since it has info about camera.

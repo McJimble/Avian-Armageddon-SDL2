@@ -6,12 +6,12 @@ void GunStats::CreateGunStats()
 {
 	// Pistol
 	GunStats* pistol = new GunStats();
-	pistol->automaticFire		= true;
+	pistol->automaticFire		= false;
 	pistol->infiniteAmmo		= true;
 	pistol->shotAngleOffset		= 0;
 	pistol->baseShotSpeed		= 600;
 	pistol->baseDamage			= 5;
-	pistol->fireRateTicks		= 250;
+	pistol->fireRateTicks		= 150;
 	pistol->reloadTicks			= 1200;
 	pistol->maximumAmmo			= 10000000;		// Pistol has "unlimited" ammo; being lazy.
 	pistol->magazineSize		= 10;

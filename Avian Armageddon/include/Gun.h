@@ -16,6 +16,7 @@ private:
 	int currentAmmo;			// Total ammo held currently for this gun by player
 	int magAmmo;				// Ammo currently in magazine. Must reload when zero.
 	int ticksLastFired;			// SDL_Ticks recorded last time object was fired.
+	float reloadTimeRemaining;	// Ticks down when reloading. Can fire again after hits zero.
 
 	bool mouseDownPrevFrame;	// Was mouse clicked in the previous frame?
 
@@ -32,7 +33,9 @@ public:
 	void SpriteAnimationSetup() override;
 
 	void Shoot();
+	void Reload();
 
+	float Get_ReloadCompletion() const;	// Returns between 0 and 1.
 	int Get_ReserveAmmo() const;
 	int Get_MagAmmo() const;
 

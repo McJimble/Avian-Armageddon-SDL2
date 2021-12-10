@@ -23,7 +23,6 @@ private:
 	std::unique_ptr<Text> ammoCounter;
 	Vector2D ammoCounterPos;
 
-
 public:
 
 	GameHud();

@@ -253,7 +253,7 @@ void Level::UpdateLevelObjects(float timestep)
 
 }
 
-const Vector2D& Level::GetRandomSpawnPoint()
+Vector2D Level::GetRandomSpawnPoint()
 {
 	if (enemySpawnPoints.empty()) return Vector2D(0, 0);
 
@@ -261,7 +261,7 @@ const Vector2D& Level::GetRandomSpawnPoint()
 	return enemySpawnPoints[randIndex];
 }
 
-const Vector2D& Level::GetSpawnPointInRange(const Vector2D& to, float radius)
+Vector2D Level::GetSpawnPointInRange(const Vector2D& to, float radius)
 {
 	// Get collection of spawns that are within the given radius.
 	std::vector<Vector2D> tempInRange;
