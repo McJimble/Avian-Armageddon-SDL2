@@ -7,11 +7,13 @@
 #include <vector>
 #include <time.h>
 
+
 #include "GameBackground.h"
 #include "Player.h"
 #include "Graphics.h"
 #include "Level.h"
 #include "WaveManager.h"
+#include "SoundManager.h"
 
 // Main game engine class. Contains functionality for SDL, rendering,
 // handling SDL events, and updating GameObjects.
@@ -27,6 +29,7 @@ private:
 	Graphics* graphics;
 	SDL_Rect camera;
 
+	std::unique_ptr<SoundManager> soundManager;
 	std::unique_ptr<WaveManager> waveManager;
 	std::unique_ptr<GameHud> gameHud;
 

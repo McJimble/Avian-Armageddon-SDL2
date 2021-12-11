@@ -16,6 +16,7 @@
 #include "Vector2D.h"
 #include "Collider.h"
 #include "EntityType.h"
+#include "SoundManager.h"
 
 class GameObject
 {

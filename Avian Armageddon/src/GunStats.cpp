@@ -9,12 +9,12 @@ void GunStats::CreateGunStats()
 	pistol->automaticFire		= false;
 	pistol->infiniteAmmo		= true;
 	pistol->shotAngleOffset		= 0;
-	pistol->baseShotSpeed		= 600;
+	pistol->baseShotSpeed		= 650;
 	pistol->baseDamage			= 5;
-	pistol->fireRateTicks		= 150;
+	pistol->fireRateTicks		= 200;
 	pistol->reloadTicks			= 1200;
 	pistol->maximumAmmo			= 10000000;		// Pistol has "unlimited" ammo; being lazy.
-	pistol->magazineSize		= 10;
+	pistol->magazineSize		= 8;
 	pistol->gunTier				= 0;
 	pistol->spriteWidth			= 17;			
 	pistol->spriteHeight		= 15;

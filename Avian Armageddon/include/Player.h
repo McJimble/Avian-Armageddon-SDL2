@@ -32,7 +32,7 @@ protected:
 	ParticleData onHitParticle;
 	ParticleData deathParticle;
 	SDL_Color hitPartMod = { 233, 0, 0, 255 };
-	int onHitParticles = 4;
+	int onHitParticles = 8;
 	int onDeathParticles = 20;
 
 	float invulAfterDamageTimeRemaining;

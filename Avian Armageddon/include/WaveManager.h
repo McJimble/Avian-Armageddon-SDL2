@@ -23,7 +23,7 @@ private:
 
 	std::mt19937 randGenerator;
 
-	std::set<std::shared_ptr<Enemy>, EnemyComparator> spawnedEnemies;
+	std::vector<std::shared_ptr<Enemy>> spawnedEnemies;
 
 	Level* level;					// Need these references for now due to mistakes in architecture.
 	Player* player;					// Need this reference too for the same reason. Will fix if time allows

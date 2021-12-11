@@ -27,9 +27,6 @@ public:
 
 	void Render(SDL_Rect* camera);
 
-	// Find path with A*, adapted from OLC's version.
-	// https://github.com/OneLoneCoder/videos/blob/master/OneLoneCoder_PathFinding_AStar.cpp
-	// Assumes the node to emplace path into is already allocated!
 	void FindPath(const Vector2D& start, const Vector2D& target, std::list<GridNode*>& emplaceNode);
 
 	/*

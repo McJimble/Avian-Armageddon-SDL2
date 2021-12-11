@@ -77,6 +77,8 @@ void Gun::SpriteAnimationSetup()
 
 void Gun::Shoot()
 {
+	if (Get_ReloadCompletion() < 1.0f) return;
+
 	ticksLastFired = SDL_GetTicks();
 
 	bool isFlipped = (flipState == SDL_FLIP_VERTICAL);
@@ -109,6 +111,7 @@ void Gun::Shoot()
 
 	magAmmo--;
 	GameHud::Instance()->Set_AmmoCounterText(this);
+	SoundManager::Instance()->Play_PlayerShoot();
 
 	if (magAmmo <= 0) Reload();
 }
@@ -117,6 +120,7 @@ void Gun::Reload()
 {
 	if (magAmmo >= stats->magazineSize) return;
 	reloadTimeRemaining = stats->reloadTicks / 1000.0f;
+	SoundManager::Instance()->Play_Reload();
 }
 
 float Gun::Get_ReloadCompletion() const

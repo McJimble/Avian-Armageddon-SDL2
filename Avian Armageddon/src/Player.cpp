@@ -158,13 +158,17 @@ void Player::OnCollisionStart(const CollisionData& data)
 
         if (!health->Get_IsAlive())
         {
-            // Temp; set player inactive on death
             SpawnDeathParticles();
             Set_Active(false);
+            SoundManager::Instance()->Play_PlayerDead();
+            SoundManager::Instance()->Pause_Music();
             WaveManager::Instance()->Set_State(WaveState::Inactive);
         }
         else
+        {
+            SoundManager::Instance()->Play_PlayerHit();
             SpawnDamageParticles();
+        }
 
         invulAfterDamageTimeRemaining = START_INVULN_TIME;
     }
@@ -181,7 +185,7 @@ void Player::SpawnDamageParticles()
     for (int i = 0; i < onHitParticles; i++)
     {
         int randomX = ((unsigned)randGenerator() % 33) - 33;
-        int randVelX = ((unsigned int)randGenerator() % 250) - 125;
+        int randVelX = ((unsigned int)randGenerator() % 350) - 175;
         int randVelY = (((unsigned int)randGenerator() % 300)) * -1;
         int colorDiff = ((unsigned int)randGenerator() % 50);
 
@@ -191,6 +195,8 @@ void Player::SpawnDamageParticles()
         onHitParticle.startColorMod = col;
         onHitParticle.position = Get_PositionCenter() + Vector2D(randomX, 0);
         onHitParticle.velocity = Vector2D(0, 0);
+
+        emitter->PE_Emit(onHitParticle);
     }
 }
 

@@ -81,20 +81,12 @@ void WorldGrid::FindPath(const Vector2D& start, const Vector2D& target, std::lis
 	startNode->gCost = 0;
 	startNode->hCost = GetDistance(startNode, targetNode);
 
+	// Heap / priority queue for efficiency. Sorts based on distance to target.
 	std::list<GridNode*> notTested;
-	notTested.push_back(startNode);
-
-	int startMS = SDL_GetTicks();
+	notTested.push_back(currentNode);
 
 	while (!notTested.empty() && currentNode != targetNode)
 	{
-		// For some reason, this was a really bad idea. Lagged very bad.
-		// Maybe use a different structure?
-		/*notTested.sort([](const GridNode* lhs, const GridNode* rhs)
-		{
-			return lhs->hCost < rhs->hCost;
-		});*/
-
 		while (!notTested.empty() && notTested.front()->visited)
 			notTested.pop_front();
 

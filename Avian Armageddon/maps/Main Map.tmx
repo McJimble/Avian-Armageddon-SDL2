@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="65" height="48" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="171">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="65" height="48" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="172">
  <tileset firstgid="1" source="Environment.tsx"/>
  <tileset firstgid="25" source="Environment Under.tsx"/>
  <tileset firstgid="40" source="Borders.tsx"/>
@@ -12581,7 +12581,6 @@
   <object id="151" x="327.333" y="216">
    <point/>
   </object>
-  <object id="152" x="427" y="393.333" width="24" height="87.3333"/>
   <object id="166" x="456.5" y="230.5">
    <point/>
   </object>
@@ -12666,6 +12665,7 @@
   <object id="163" x="26.6667" y="4.66667" width="194" height="120.667"/>
   <object id="164" x="226.667" y="2.66667" width="282.667" height="40.6667"/>
   <object id="165" x="230" y="48.6667" width="44.6667" height="42"/>
+  <object id="171" x="427.75" y="392.5" width="23.25" height="90.25"/>
  </objectgroup>
  <objectgroup id="11" name="Water Collisions">
   <properties>

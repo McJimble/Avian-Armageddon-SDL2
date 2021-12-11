@@ -1,6 +1,6 @@
 #include "Graphics.h"
 
-const char* Graphics::WINDOW_NAME = "Assignment 3";
+const char* Graphics::WINDOW_NAME = "Avian Armageddon";
 const char* Graphics::BASE_IMAGE_PATH = "./Sprites/";
 const char* Graphics::BASE_FONT_PATH = "./Fonts/";
 const int Graphics::SPRITE_SCALE = 4;

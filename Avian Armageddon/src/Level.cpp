@@ -197,6 +197,7 @@ void Level::LoadMap(const std::string& mapFileName)
 				}
 			}
 			else
+			{
 				propName = "isSpawnPoint";
 				if (propName.compare(nextProp->Attribute("name")) == 0 &&
 					nextProp->BoolAttribute("value") == true)
@@ -213,9 +214,9 @@ void Level::LoadMap(const std::string& mapFileName)
 
 						object = object->NextSiblingElement("object");
 					}
-						
-				}
 
+				}
+			}
 		}
 
 		objGroup = objGroup->NextSiblingElement("objectgroup");
@@ -233,6 +234,7 @@ void Level::RenderLevelObjects(SDL_Rect* camera)
 
 	//worldGrid->Render(camera);
 
+	// Renders colliders at white rects.
 	for (auto& col : environmentCollisions)
 	{
 		/*
@@ -246,6 +248,23 @@ void Level::RenderLevelObjects(SDL_Rect* camera)
 		SDL_RenderDrawRectF(Graphics::Instance()->Get_Renderer(), &test);
 		*/
 	}
+
+	// Renders spawn points
+	/*
+	Uint8 testR = 0;
+	for (auto& pos : enemySpawnPoints)
+	{
+		SDL_Rect testPosRect;
+		testPosRect.x = pos[0] - camera->x;
+		testPosRect.y = pos[1] - camera->y;
+		testPosRect.w = Graphics::TILE_SIZE * (Graphics::SPRITE_SCALE + 1);
+		testPosRect.h = Graphics::TILE_SIZE * (Graphics::SPRITE_SCALE + 1);
+
+		SDL_SetRenderDrawColor(Graphics::Instance()->Get_Renderer(), testR, 0, 0, 255);
+		SDL_RenderFillRect(Graphics::Instance()->Get_Renderer(), &testPosRect);
+		testR += 2;
+	}
+	*/
 }
 
 void Level::UpdateLevelObjects(float timestep)

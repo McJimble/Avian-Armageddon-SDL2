@@ -123,10 +123,14 @@ void WaveManager::Update(float timestep)
 			if (enemiesKilled >= Get_TotalWaveEnemies())
 				Set_State(WaveState::Inactive);
 
-			if (enemiesAlive > Get_MaxEnemiesAlive())
+			// If there's maximum allowed enemies, do nothing for now.
+			// Also, 2nd check fixes problem where enemies continue to spawn
+			// when there are less than MaxEnemiesAlive enemies remaining to kill.
+			if (enemiesAlive >= Get_MaxEnemiesAlive() || enemiesAlive + enemiesKilled >= Get_TotalWaveEnemies())
+			{
 				break;
-
-			if (spawnEnemyWaitTime <= 0.0f)
+			}
+			else if (spawnEnemyWaitTime <= 0.0f)
 			{
 				SpawnEnemy(Get_MaxEnemyHealth());
 				spawnEnemyWaitTime = Get_EnemySpawnRate();
@@ -138,7 +142,7 @@ void WaveManager::Update(float timestep)
 		case WaveState::Inactive:
 		{
 			inactiveTime -= timestep;
-			if (inactiveTime < 0.0f)
+			if (inactiveTime < 0.0f && player->Get_Active())
 			{
 				Set_State(WaveState::Intermission);
 				return;
@@ -157,6 +161,12 @@ void WaveManager::Update(float timestep)
 
 void WaveManager::Render(SDL_Rect* camera)
 {
+	std::sort(spawnedEnemies.begin(), spawnedEnemies.end(),
+		[&](const std::shared_ptr<Enemy>& lhs, const std::shared_ptr<Enemy>& rhs) -> bool
+		{
+			return lhs->Get_yPos() < rhs->Get_yPos();
+		});
+
 	bool playerRendered = false;
 	for (auto& enemy : spawnedEnemies)
 	{
@@ -191,7 +201,7 @@ void WaveManager::SpawnEnemy(int health)
 	newEnemy->ObjInit();
 
 	enemiesAlive++;
-	spawnedEnemies.insert(std::shared_ptr<Enemy>(newEnemy));
+	spawnedEnemies.push_back(std::shared_ptr<Enemy>(newEnemy));
 }
 
 void WaveManager::NextWave()
@@ -205,15 +215,14 @@ void WaveManager::NextWave()
 	intermissionText->spawnText->UpdateText(displayWave.c_str());
 
 	intermissionText->timeRemaining = defaultIntermissionTime;
-
 	intermissionTime = defaultIntermissionTime;
+
+	SoundManager::Instance()->Play_WaveStart();
 }
 
 void WaveManager::ShowGameOver()
 {
-	std::string gameOverText = "Game Over\n You survived ";
-	gameOverText.append(std::to_string(wave));
-	gameOverText.append(" rounds");
+	std::string gameOverText = ":(";
 	intermissionText->spawnText->UpdateText(gameOverText.c_str());
 	intermissionText->spawnText->Set_Position(textScreenPos);
 	intermissionText->spawnText->Set_CornerAsCenter();

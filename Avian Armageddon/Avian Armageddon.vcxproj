@@ -171,6 +171,7 @@
     <ClInclude Include="include\Particle.h" />
     <ClInclude Include="include\ParticleEmitter.h" />
     <ClInclude Include="include\Player.h" />
+    <ClInclude Include="include\SoundManager.h" />
     <ClInclude Include="include\Sprite.h" />
     <ClInclude Include="include\Text.h" />
     <ClInclude Include="include\Tile.h" />
@@ -208,6 +209,7 @@
     <ClCompile Include="src\Particle.cpp" />
     <ClCompile Include="src\ParticleEmitter.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\Text.cpp" />
     <ClCompile Include="src\Tile.cpp" />

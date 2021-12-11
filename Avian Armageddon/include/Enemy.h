@@ -82,12 +82,3 @@ public:
 
 	static void DestroyBySpeed(Particle* part);
 };
-
-// For use in std::set.
-struct EnemyComparator
-{
-	bool operator()(const std::shared_ptr<Enemy>& lhs, const std::shared_ptr<Enemy>& rhs) const
-	{
-		return lhs->Get_yPos() < rhs->Get_yPos();
-	}
-};

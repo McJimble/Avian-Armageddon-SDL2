@@ -5,7 +5,7 @@
 float Enemy::initSpawnParticlesRate = 0.125f;
 float Enemy::initChaseStateNewPath = 0.05f;
 float Enemy::moveSpeed = 250.0f;
-float Enemy::knockBackSpeed = 800.0f;
+float Enemy::knockBackSpeed = 1200.0f;
 int Enemy::damageToPlayer = 25;
 
 Enemy::Enemy(int startHealth, const std::string& graphicPath, const int& start_x, const int& start_y,
@@ -59,6 +59,7 @@ void Enemy::Set_State(EnemyState newState)
     {
         case (EnemyState::Spawn):
             sprite->PlayAnimation("Spawn", true);
+            SoundManager::Instance()->Play_EnemySpawn();
             mainCollider->Set_IsActive(false);
             break;
         case (EnemyState::Chase):
@@ -110,7 +111,7 @@ void Enemy::ObjUpdate(float timestep)
 
             chaseStateNewPath = initChaseStateNewPath;
 
-            // A* pathfinding code.
+            // Use A* pathfinding.
             Vector2D currPos = position;
             Vector2D nextPos = activePlayer->Get_Position();
             Vector2D addVel;
@@ -119,7 +120,7 @@ void Enemy::ObjUpdate(float timestep)
             if ((nextPos - currPos).SqrMagnitude() > chaseDirectRadius * chaseDirectRadius)
             {
                 WorldGrid* grid = currentLevel->GetGrid();
-                grid->FindPath(position, activePlayer->Get_PositionCenter(), pathFindNodes);
+                grid->FindPath(position, activePlayer->Get_Position(), pathFindNodes);
 
                 if (!pathFindNodes.empty())
                 {
@@ -186,11 +187,14 @@ void Enemy::OnCollisionStart(const CollisionData& data)
     {
         Bullet* b = dynamic_cast<Bullet*>(data.other->Get_GameObject());
         health->Damage(b->Get_FinalDamage(), true);
-
         velocity += (data.normal) * knockBackSpeed;
+
+        // I know this makes two sounds stack upon death, it sound nice here.
+        SoundManager::Instance()->Play_EnemyHit();
 
         if (!health->Get_IsAlive())
         {
+            SoundManager::Instance()->Play_EnemyDead();
             Set_State(EnemyState::Die);
         }
     }
@@ -216,7 +220,7 @@ void Enemy::EmitSpawnParticles()
         v = (v < 0) ? 0.0 : v;
 
         //std::cout << h << ", " << s << ", " << v << "\n";
-        std::cout << valDiff << std::endl;
+        //std::cout << valDiff << std::endl;
 
         Graphics::HSVtoRGB(h, s, v, &shiftPartMod);
 

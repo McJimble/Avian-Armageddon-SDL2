@@ -6,6 +6,7 @@ GameEngine::GameEngine()
 {
     if (instance) return;
     instance = this;
+
 }
 
 GameEngine::~GameEngine()
@@ -32,6 +33,11 @@ void GameEngine::Init()
         std::cout << "Finish SDL Init" << std::endl;
     }
 
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        std::cout << "Unable to initialize SDL Mixer\n";
+    }
+
     if (TTF_Init() != 0)
     {
         std::cout << "Unable to initialize TTF Font Engine\n";
@@ -43,6 +49,8 @@ void GameEngine::Init()
     camera.y = -(Graphics::DEF_SCREEN_HEIGHT / 2);
     graphics->Set_FullScreen();
     srand((unsigned int)time(0));
+
+    soundManager = std::make_unique<SoundManager>();
 
     background = std::make_unique<GameBackground>("Basic_Background.png", 70, 0, 15, 205);
 
@@ -69,6 +77,8 @@ void GameEngine::Init()
 
     // Finally make wave manager last; needs references to level and player
     waveManager = std::make_unique<WaveManager>(tempLevel.get(), player.get());
+
+    soundManager->Play_Music();
 }
 
 void GameEngine::HandleEvents()
@@ -143,6 +153,7 @@ void GameEngine::Quit()
 
     IMG_Quit();
     SDL_Quit();
+    Mix_Quit();
 }
 
 void GameEngine::CreateAllGuns()
