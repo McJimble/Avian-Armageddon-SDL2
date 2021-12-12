@@ -81,7 +81,6 @@ void WorldGrid::FindPath(const Vector2D& start, const Vector2D& target, std::lis
 	startNode->gCost = 0;
 	startNode->hCost = GetDistance(startNode, targetNode);
 
-	// Heap / priority queue for efficiency. Sorts based on distance to target.
 	std::list<GridNode*> notTested;
 	notTested.push_back(currentNode);
 

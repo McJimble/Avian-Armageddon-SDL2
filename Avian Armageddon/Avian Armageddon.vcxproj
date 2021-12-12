@@ -181,8 +181,12 @@
     <ClInclude Include="include\GunStats.h" />
     <ClInclude Include="include\WaveManager.h" />
     <ClInclude Include="include\WorldGrid.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\AAicon.png" />
+    <Image Include="..\..\aaicon_vrt_icon.ico" />
+    <Image Include="icon1.ico" />
     <Image Include="Sprites\Particle_Default.png" />
     <Image Include="Sprites\TestCollectible.png" />
     <Image Include="Sprites\TestCollectibleGreen.png" />
@@ -221,6 +225,9 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="Fonts\LcdSolid.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Avian Armageddon.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

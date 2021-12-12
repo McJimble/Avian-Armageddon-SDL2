@@ -99,6 +99,9 @@
     <ClInclude Include="include\SoundManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprites\Particle_Default.png">
@@ -114,6 +117,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Sprites\TestTilemap.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Downloads\AAicon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\aaicon_vrt_icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
@@ -205,5 +217,10 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="Fonts\LcdSolid.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Avian Armageddon.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

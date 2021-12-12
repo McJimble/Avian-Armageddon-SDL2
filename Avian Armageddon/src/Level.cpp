@@ -286,7 +286,12 @@ Vector2D Level::GetSpawnPointInRange(const Vector2D& to, float radius)
 	std::vector<Vector2D> tempInRange;
 	for (auto& spawn : enemySpawnPoints)
 	{
-		if ((spawn - to).SqrMagnitude() < radius * radius)
+		float sqrMag = (spawn - to).SqrMagnitude();
+		float sqrRad = radius * radius;
+
+		// If in radius specfied (but not really close), this position is valid.
+		// 2nd check is for prevening enemies from spawning right on the player.
+		if (sqrMag < sqrRad && sqrMag > radius / 10.0)
 			tempInRange.push_back(spawn);
 	}
 

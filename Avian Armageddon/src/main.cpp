@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
             lastCountStartTime = thisStartTime;
             currentFPS = FPSCounter;
             FPSCounter = 0;
-            std::cout << currentFPS << "\n";
+            //std::cout << currentFPS << "\n";
         }
 
     }

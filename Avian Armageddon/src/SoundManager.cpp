@@ -8,7 +8,7 @@ SoundManager::SoundManager()
 	instance = this;
 
 	music = Mix_LoadMUS("./Sounds/Prototype_JamesPaddock_Stuart_Rynn.wav");
-	Mix_VolumeMusic(MIX_MAX_VOLUME - 80);
+	Mix_VolumeMusic(MIX_MAX_VOLUME - 95);
 
 	reload = Mix_LoadWAV("./Sounds/reload.wav");
 	playerShoot = Mix_LoadWAV("./Sounds/playerShoot.wav");
@@ -18,6 +18,7 @@ SoundManager::SoundManager()
 	enemyDead = Mix_LoadWAV("./Sounds/enemyDead.wav");
 	enemySpawn = Mix_LoadWAV("./Sounds/enemySpawn.wav");
 	waveStart = Mix_LoadWAV("./Sounds/newWave.wav");
+	Mix_Volume(-1, MIX_MAX_VOLUME - 50);
 }
 
 SoundManager::~SoundManager()
