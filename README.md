@@ -5,4 +5,5 @@ Written in C++ and uses the SDL library to render sprites, text, and play audio.
 All core aspects of the engine (animations, physics, text, sprites, collision, etc.) were written entirely myself
 
 Below is a snippet from the small demo game "Avian Armageddon" that I created with the engine. Feel free to try it out, downloads can be found in the Releases tab!
+
 ![Avian Armageddon](https://user-images.githubusercontent.com/54756070/215255715-0d4f3f99-52a4-4250-831b-fd1bacf26f29.gif)
